@@ -1,0 +1,47 @@
+name: uniboard
+description: UniBoard - Student Boarding Finder App for Sri Lanka
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^3.13.0
+  firebase_auth: ^5.5.3
+  cloud_firestore: ^5.6.6
+  firebase_storage: ^12.4.5
+  firebase_messaging: ^15.2.5
+
+  # Maps & Location
+  google_maps_flutter: ^2.10.0
+  geolocator: ^13.0.4
+
+  # Image
+  image_picker: ^1.1.2
+  cached_network_image: ^3.4.1
+
+  # UI
+  google_fonts: ^6.2.1
+  lottie: ^3.3.1
+
+  # Utilities
+  intl: ^0.20.2
+  uuid: ^4.5.1
+  shared_preferences: ^2.5.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/animations/

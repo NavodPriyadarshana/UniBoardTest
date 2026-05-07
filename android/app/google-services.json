@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "554742916529",
+    "project_id": "uniboard-fd52f",
+    "storage_bucket": "uniboard-fd52f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:554742916529:android:a58096ade9588eefb4c990",
+        "android_client_info": {
+          "package_name": "com.uniboard.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA22ETCzlwKZzXEwVC2VxYR3Tz-NM3jlWE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
