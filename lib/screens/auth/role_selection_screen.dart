@@ -3,8 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import 'auth_screen.dart';
 
-// RoleSelectionScreen is shown after the splash screen.
-// It lets the user choose whether they are a Student, Landlord or Admin.
 class RoleSelectionScreen extends StatefulWidget {
   const RoleSelectionScreen({super.key});
 
@@ -15,7 +13,6 @@ class RoleSelectionScreen extends StatefulWidget {
 class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     with TickerProviderStateMixin {
 
-  // Animation controllers for smooth entrance effects
   late AnimationController _fadeController;
   late AnimationController _slideController;
   late Animation<double> _fadeAnim;
@@ -25,7 +22,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
   void initState() {
     super.initState();
 
-    // Fade in animation - entire screen fades in when opened
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -35,7 +31,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
       curve: Curves.easeIn,
     );
 
-    // Slide up animation - role cards slide up from below
     _slideController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 700),
@@ -47,7 +42,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
       CurvedAnimation(parent: _slideController, curve: Curves.easeOut),
     );
 
-    // Start both animations together when screen opens
     _fadeController.forward();
     _slideController.forward();
   }
@@ -65,14 +59,15 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
       body: Container(
         width: double.infinity,
         height: double.infinity,
+        // ── Same gradient as splash screen ──
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: [0.0, 1.0],
             colors: [
-              Color(0xFF0A1628),
-              Color(0xFF0D47A1),
-              Color(0xFF1565C0),
+              Color(0xFFF1F9EE),
+              Color(0xFFF1F3FA),
             ],
           ),
         ),
@@ -84,127 +79,139 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 40),
-
-                  // App logo and name at top
-                  Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.home_rounded,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'UniBoard',
-                        style: GoogleFonts.poppins(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-
                   const SizedBox(height: 48),
 
-                  // Welcome heading
+                  // ── "Welcome to" ──
                   Text(
-                    'Welcome to\nUniBoard 👋',
+                    'Welcome to',
                     style: GoogleFonts.poppins(
-                      fontSize: 34,
+                      fontSize: 32,
                       fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                      color: const Color(0xFF1A1A2E),
                       height: 1.2,
-                      letterSpacing: -1,
                     ),
                   ),
+
+                  // ── "UniBoard 👋" with split colors ──
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Uni',
+                          style: GoogleFonts.poppins(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF2B658B),
+                            height: 1.2,
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'Board',
+                          style: GoogleFonts.poppins(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFFF09418),
+                            height: 1.2,
+                          ),
+                        ),
+                        TextSpan(
+                          text: ' 👋',
+                          style: GoogleFonts.poppins(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            height: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   const SizedBox(height: 12),
 
+                  // ── Subtitle ──
                   Text(
-                    'Sri Lanka\'s #1 student boarding\nfinder platform',
+                    "Sri Lanka's #1 student boarding\nfinder platform",
                     style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF2B658B),
                       height: 1.5,
                     ),
                   ),
 
                   const SizedBox(height: 48),
 
-                  // Role selection label
+                  // ── "I am a..." label ──
                   Text(
                     'I am a...',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white.withOpacity(0.9),
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF2B658B).withOpacity(0.7),
                     ),
                   ),
+
                   const SizedBox(height: 16),
 
-                  // 3 Role cards with slide up animation
+                  // ── Role cards ──
                   SlideTransition(
                     position: _slideAnim,
                     child: Column(
                       children: [
 
-                        // Student card
+                        // Student card — blue
                         _RoleCard(
                           icon: Icons.school_rounded,
                           title: 'Student',
-                          subtitle: 'Find & book boardings near your university',
-                          color: AppColors.studentColor,
+                          subtitle: 'Find & book boarding near\nyour university',
+                          cardColor: const Color(0xFF2B658B),
                           onTap: () => _navigateToAuth(context, 'student'),
                         ),
-                        const SizedBox(height: 14),
 
-                        // Landlord card
+                        const SizedBox(height: 16),
+
+                        // Landlord card — orange
                         _RoleCard(
                           icon: Icons.house_rounded,
                           title: 'Landlord',
-                          subtitle: 'List your property and manage bookings',
-                          color: AppColors.landlordColor,
+                          subtitle: 'List your property and manage\nbookings',
+                          cardColor: const Color(0xFFF09418),
                           onTap: () => _navigateToAuth(context, 'landlord'),
                         ),
-                        const SizedBox(height: 14),
                       ],
                     ),
                   ),
 
                   const Spacer(),
 
-                  // Sri Lanka badge at bottom
+                  // ── Sri Lanka badge ──
                   Center(
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 24),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
+                          horizontal: 20, vertical: 10),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.white.withOpacity(0.75),
+                        borderRadius: BorderRadius.circular(30),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.2),
+                          color: const Color(0xFFDDE3F0),
+                          width: 1,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Text(
                         '🇱🇰  Made for Sri Lankan Students',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: Colors.white.withOpacity(0.8),
+                          color: const Color(0xFF5C6B8A),
                           fontWeight: FontWeight.w500,
+                          letterSpacing: 0.2,
                         ),
                       ),
                     ),
@@ -218,7 +225,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     );
   }
 
-  // Navigates to AuthScreen with the selected role
   void _navigateToAuth(BuildContext context, String role) {
     Navigator.push(
       context,
@@ -228,7 +234,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
-        transitionDuration: const Duration(milliseconds: 300),
+        transitionDuration: const Duration(milliseconds: 400),
       ),
     );
   }
@@ -236,19 +242,20 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
 
 // ─────────────────────────────────────────────
 // ROLE CARD WIDGET
+// Solid colored card with icon, title, subtitle
 // ─────────────────────────────────────────────
 class _RoleCard extends StatefulWidget {
   final IconData icon;
   final String title;
   final String subtitle;
-  final Color color;
+  final Color cardColor;
   final VoidCallback onTap;
 
   const _RoleCard({
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.color,
+    required this.cardColor,
     required this.onTap,
   });
 
@@ -269,44 +276,42 @@ class _RoleCardState extends State<_RoleCard> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         transform: Matrix4.identity()..scale(_isPressed ? 0.97 : 1.0),
-        padding: const EdgeInsets.all(18),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(_isPressed ? 0.2 : 0.12),
+          color: _isPressed
+              ? widget.cardColor.withOpacity(0.85)
+              : widget.cardColor,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: widget.color.withOpacity(0.5),
-            width: 1.5,
-          ),
           boxShadow: [
             BoxShadow(
-              color: widget.color.withOpacity(0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: widget.cardColor.withOpacity(0.35),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: Row(
           children: [
-            // Role icon
+
+            // ── Icon container ──
             Container(
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: widget.color.withOpacity(0.2),
+                color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: widget.color.withOpacity(0.4),
-                ),
               ),
               child: Icon(
                 widget.icon,
-                color: widget.color,
+                color: Colors.white,
                 size: 30,
               ),
             ),
-            const SizedBox(width: 16),
 
-            // Title and subtitle
+            const SizedBox(width: 18),
+
+            // ── Title & subtitle ──
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,35 +319,21 @@ class _RoleCardState extends State<_RoleCard> {
                   Text(
                     widget.title,
                     style: GoogleFonts.poppins(
-                      fontSize: 17,
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   Text(
                     widget.subtitle,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withOpacity(0.85),
+                      height: 1.4,
                     ),
                   ),
                 ],
-              ),
-            ),
-
-            // Arrow icon
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: widget.color.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: widget.color,
-                size: 14,
               ),
             ),
           ],

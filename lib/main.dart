@@ -44,8 +44,10 @@ class UniboardApp extends StatelessWidget {
 
 // ─────────────────────────────────────────────
 // SPLASH SCREEN
-// First screen shown when app opens.
-// Shows animated logo then navigates to RoleSelectionScreen.
+// Light gradient background with centered logo,
+// animated loading dots, and Sri Lanka badge.
+// Logo is precached after first frame to ensure
+// context is ready — avoids white screen issue.
 // ─────────────────────────────────────────────
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -59,72 +61,68 @@ class _SplashScreenState extends State<SplashScreen>
 
   late AnimationController _fadeController;
   late AnimationController _scaleController;
-  late AnimationController _slideController;
-  late AnimationController _pulseController;
+  late AnimationController _badgeFadeController;
+
   late Animation<double> _fadeAnim;
   late Animation<double> _scaleAnim;
-  late Animation<Offset> _slideAnim;
-  late Animation<double> _pulseAnim;
+  late Animation<double> _badgeFadeAnim;
 
   @override
   void initState() {
     super.initState();
 
-    // Fade animation - logo appears from invisible
+    // Logo fade-in
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 900),
     );
     _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeIn),
     );
 
-    // Scale animation - logo grows from small to full size
+    // Logo scale-up with elastic bounce
     _scaleController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1000),
     );
-    _scaleAnim = Tween<double>(begin: 0.5, end: 1.0).animate(
+    _scaleAnim = Tween<double>(begin: 0.6, end: 1.0).animate(
       CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
     );
 
-    // Slide animation - text slides up from below
-    _slideController = AnimationController(
+    // Badge fades in slightly delayed
+    _badgeFadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _slideController, curve: Curves.easeOut),
+    _badgeFadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _badgeFadeController, curve: Curves.easeIn),
     );
 
-    // Pulse animation - logo glows continuously
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
-    _pulseAnim = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
+    // ✅ Wait for first frame before using context for precacheImage
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _preloadAndStart();
+    });
+  }
 
+  // ── Precaches logo into memory before any animation runs ──
+  Future<void> _preloadAndStart() async {
+    await Future.wait([
+      precacheImage(const AssetImage('assets/images/logo.png'), context),
+    ]);
     _startAnimations();
   }
 
-  // Starts animations then navigates to RoleSelectionScreen after 3 seconds
+  // ── Runs animations then navigates to RoleSelectionScreen ──
   Future<void> _startAnimations() async {
     _fadeController.forward();
     _scaleController.forward();
-    await Future.delayed(const Duration(milliseconds: 400));
-    _slideController.forward();
 
-    //print('⏳ Waiting 3 seconds...');
+    await Future.delayed(const Duration(milliseconds: 600));
+    _badgeFadeController.forward();
+
     await Future.delayed(const Duration(seconds: 4));
-    //print('✅ 3 seconds done! Navigating...');
 
     if (mounted) {
-      //print('✅ Widget is mounted. Pushing route...');
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
@@ -133,11 +131,9 @@ class _SplashScreenState extends State<SplashScreen>
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
-          transitionDuration: const Duration(milliseconds: 500),
+          transitionDuration: const Duration(milliseconds: 800),
         ),
       );
-    } else {
-      //print('❌ Widget is NOT mounted!');
     }
   }
 
@@ -145,279 +141,135 @@ class _SplashScreenState extends State<SplashScreen>
   void dispose() {
     _fadeController.dispose();
     _scaleController.dispose();
-    _slideController.dispose();
-    _pulseController.dispose();
+    _badgeFadeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/bg_splash.jpg'),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Color(0xCC0A1628),
-              BlendMode.darken,
-            ),
+        // ── Light gradient: #F1F9EE (top) → #F1F3FA (bottom) ──
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: [0.0, 1.0],
+            colors: [
+              Color(0xFFF1F9EE),
+              Color(0xFFF1F3FA),
+            ],
           ),
         ),
         child: Stack(
           children: [
-            // Decorative circles
-            Positioned(
-              top: -size.width * 0.3,
-              right: -size.width * 0.2,
-              child: Container(
-                width: size.width * 0.8,
-                height: size.width * 0.8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.05),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: -size.width * 0.4,
-              left: -size.width * 0.2,
-              child: Container(
-                width: size.width * 1.0,
-                height: size.width * 1.0,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.04),
-                ),
-              ),
-            ),
-            Positioned(
-              top: size.height * 0.3,
-              left: -size.width * 0.3,
-              child: Container(
-                width: size.width * 0.6,
-                height: size.width * 0.6,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.03),
-                ),
-              ),
-            ),
 
-            // Floating dots
-            ..._buildFloatingDots(size),
-
-            // Main content
+            // ── Centered Logo ──
             Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Pulsing logo
-                  FadeTransition(
-                    opacity: _fadeAnim,
-                    child: ScaleTransition(
-                      scale: _scaleAnim,
-                      child: AnimatedBuilder(
-                        animation: _pulseAnim,
-                        builder: (context, child) {
-                          return Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(32),
-                              border: Border.all(
-                                color: Colors.white
-                                    .withOpacity(0.3 * _pulseAnim.value),
-                                width: 2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.white
-                                      .withOpacity(0.2 * _pulseAnim.value),
-                                  blurRadius: 30 * _pulseAnim.value,
-                                  spreadRadius: 5 * _pulseAnim.value,
-                                ),
-                                BoxShadow(
-                                  color: const Color(0xFF1A73E8)
-                                      .withOpacity(0.5),
-                                  blurRadius: 20,
-                                  spreadRadius: 2,
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.home_rounded,
-                              size: 64,
-                              color: Colors.white,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+              child: FadeTransition(
+                opacity: _fadeAnim,
+                child: ScaleTransition(
+                  scale: _scaleAnim,
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    width: 280,
+                    fit: BoxFit.contain,
                   ),
-
-                  const SizedBox(height: 32),
-
-                  // App name and tagline
-                  SlideTransition(
-                    position: _slideAnim,
-                    child: FadeTransition(
-                      opacity: _fadeAnim,
-                      child: Column(
-                        children: [
-                          Text(
-                            'UniBoard',
-                            style: GoogleFonts.poppins(
-                              fontSize: 42,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              letterSpacing: -1,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Student Boarding Finder',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white.withOpacity(0.8),
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Container(
-                            width: 50,
-                            height: 3,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.6),
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Find your perfect home\nnear university 🏠',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white.withOpacity(0.7),
-                              height: 1.6,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 80),
-
-                  // Loading dots
-                  FadeTransition(
-                    opacity: _fadeAnim,
-                    child: Column(
-                      children: [
-                        _LoadingDots(),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Loading...',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.white.withOpacity(0.5),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
 
-            // Sri Lanka badge
+            // ── Loading dots + "Loading..." label ──
             Positioned(
-              bottom: 40,
+              bottom: 110,
               left: 0,
               right: 0,
               child: FadeTransition(
                 opacity: _fadeAnim,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const _LoadingDots(),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Loading...',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: const Color(0xFF9E9E9E),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // ── Sri Lanka badge ──
+            Positioned(
+              bottom: 36,
+              left: 0,
+              right: 0,
+              child: FadeTransition(
+                opacity: _badgeFadeAnim,
                 child: Center(
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white.withOpacity(0.75),
+                      borderRadius: BorderRadius.circular(30),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
+                        color: const Color(0xFFDDE3F0),
+                        width: 1,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Text(
                       '🇱🇰  Made for Sri Lankan Students',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: Colors.white.withOpacity(0.8),
+                        color: const Color(0xFF5C6B8A),
                         fontWeight: FontWeight.w500,
+                        letterSpacing: 0.2,
                       ),
                     ),
                   ),
                 ),
               ),
             ),
+
           ],
         ),
       ),
     );
   }
-
-  // Floating dots scattered around screen for decoration
-  List<Widget> _buildFloatingDots(Size size) {
-    final dots = [
-      {'top': 0.15, 'left': 0.1, 'size': 8.0, 'opacity': 0.3},
-      {'top': 0.25, 'right': 0.08, 'size': 5.0, 'opacity': 0.2},
-      {'top': 0.45, 'left': 0.05, 'size': 6.0, 'opacity': 0.15},
-      {'top': 0.6, 'right': 0.12, 'size': 10.0, 'opacity': 0.2},
-      {'top': 0.7, 'left': 0.15, 'size': 4.0, 'opacity': 0.25},
-      {'top': 0.8, 'right': 0.2, 'size': 7.0, 'opacity': 0.15},
-    ];
-
-    return dots.map((dot) {
-      return Positioned(
-        top: dot['top'] != null ? size.height * (dot['top'] as double) : null,
-        left: dot['left'] != null ? size.width * (dot['left'] as double) : null,
-        right: dot['right'] != null
-            ? size.width * (dot['right'] as double)
-            : null,
-        child: FadeTransition(
-          opacity: _fadeAnim,
-          child: Container(
-            width: dot['size'] as double,
-            height: dot['size'] as double,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(dot['opacity'] as double),
-            ),
-          ),
-        ),
-      );
-    }).toList();
-  }
 }
 
 // ─────────────────────────────────────────────
 // LOADING DOTS WIDGET
-// 3 dots that pulse one after another
+// 3 dots that pulse one after another,
+// shifting from grey to blue as they animate.
 // ─────────────────────────────────────────────
 class _LoadingDots extends StatefulWidget {
+  const _LoadingDots();
+
   @override
   State<_LoadingDots> createState() => _LoadingDotsState();
 }
 
 class _LoadingDotsState extends State<_LoadingDots>
     with TickerProviderStateMixin {
+
   late List<AnimationController> _controllers;
   late List<Animation<double>> _animations;
 
@@ -425,7 +277,7 @@ class _LoadingDotsState extends State<_LoadingDots>
   void initState() {
     super.initState();
 
-    _controllers = List.generate(3, (i) {
+    _controllers = List.generate(3, (_) {
       return AnimationController(
         vsync: this,
         duration: const Duration(milliseconds: 600),
@@ -433,11 +285,12 @@ class _LoadingDotsState extends State<_LoadingDots>
     });
 
     _animations = _controllers.map((c) {
-      return Tween<double>(begin: 0.4, end: 1.0).animate(
+      return Tween<double>(begin: 0.25, end: 1.0).animate(
         CurvedAnimation(parent: c, curve: Curves.easeInOut),
       );
     }).toList();
 
+    // Each dot starts with a 200ms delay after the previous
     for (int i = 0; i < 3; i++) {
       Future.delayed(Duration(milliseconds: i * 200), () {
         if (mounted) _controllers[i].repeat(reverse: true);
@@ -460,14 +313,18 @@ class _LoadingDotsState extends State<_LoadingDots>
       children: List.generate(3, (i) {
         return AnimatedBuilder(
           animation: _animations[i],
-          builder: (context, child) {
+          builder: (context, _) {
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: 8,
-              height: 8,
+              width: 9,
+              height: 9,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(_animations[i].value),
+                color: Color.lerp(
+                  const Color(0xFFCCCCCC),
+                  const Color(0xFF5C8DD6),
+                  _animations[i].value,
+                ),
               ),
             );
           },
