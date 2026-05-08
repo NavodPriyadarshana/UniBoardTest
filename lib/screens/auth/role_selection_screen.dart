@@ -79,7 +79,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 100),
 
                   // ── "Welcome to" ──
                   Text(
@@ -139,7 +139,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                     ),
                   ),
 
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 150),
 
                   // ── "I am a..." label ──
                   Text(
