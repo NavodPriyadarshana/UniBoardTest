@@ -13,7 +13,6 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen>
     with SingleTickerProviderStateMixin {
-
   late TabController _tabController;
 
   @override
@@ -55,11 +54,10 @@ class _AuthScreenState extends State<AuthScreen>
         child: SafeArea(
           child: Column(
             children: [
-
               // ── Top bar: only back button ──
               Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24, vertical: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -240,8 +238,8 @@ class _SignInFormState extends State<_SignInForm> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text(
               'Email Sent! 📧',
               style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
@@ -313,7 +311,8 @@ class _SignInFormState extends State<_SignInForm> {
               roleColor: widget.roleColor,
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter your email';
+                if (value == null || value.isEmpty)
+                  return 'Please enter your email';
                 if (!value.contains('@')) return 'Please enter a valid email';
                 return null;
               },
@@ -342,8 +341,10 @@ class _SignInFormState extends State<_SignInForm> {
                     setState(() => _passwordVisible = !_passwordVisible),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter your password';
-                if (value.length < 6) return 'Password must be at least 6 characters';
+                if (value == null || value.isEmpty)
+                  return 'Please enter your password';
+                if (value.length < 6)
+                  return 'Password must be at least 6 characters';
                 return null;
               },
             ),
@@ -524,7 +525,8 @@ class _SignUpFormState extends State<_SignUpForm> {
               icon: Icons.person_outline_rounded,
               roleColor: widget.roleColor,
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter your name';
+                if (value == null || value.isEmpty)
+                  return 'Please enter your name';
                 return null;
               },
             ),
@@ -541,7 +543,8 @@ class _SignUpFormState extends State<_SignUpForm> {
               roleColor: widget.roleColor,
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter your email';
+                if (value == null || value.isEmpty)
+                  return 'Please enter your email';
                 if (!value.contains('@')) return 'Please enter a valid email';
                 return null;
               },
@@ -559,7 +562,8 @@ class _SignUpFormState extends State<_SignUpForm> {
               roleColor: widget.roleColor,
               keyboardType: TextInputType.phone,
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter your phone number';
+                if (value == null || value.isEmpty)
+                  return 'Please enter your phone number';
                 return null;
               },
             ),
@@ -595,8 +599,10 @@ class _SignUpFormState extends State<_SignUpForm> {
                     setState(() => _passwordVisible = !_passwordVisible),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter a password';
-                if (value.length < 6) return 'Password must be at least 6 characters';
+                if (value == null || value.isEmpty)
+                  return 'Please enter a password';
+                if (value.length < 6)
+                  return 'Password must be at least 6 characters';
                 return null;
               },
             ),
@@ -624,8 +630,10 @@ class _SignUpFormState extends State<_SignUpForm> {
                     () => _confirmPasswordVisible = !_confirmPasswordVisible),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please confirm your password';
-                if (value != _passwordController.text) return 'Passwords do not match';
+                if (value == null || value.isEmpty)
+                  return 'Please confirm your password';
+                if (value != _passwordController.text)
+                  return 'Passwords do not match';
                 return null;
               },
             ),
@@ -760,8 +768,7 @@ Widget _buildTextField({
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: Colors.red, width: 2),
       ),
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
   );
 }
