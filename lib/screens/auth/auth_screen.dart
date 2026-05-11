@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../services/auth_service.dart';
+import '../student/student_home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   final String role;
@@ -13,6 +14,7 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen>
     with SingleTickerProviderStateMixin {
+
   late TabController _tabController;
 
   @override
@@ -39,7 +41,6 @@ class _AuthScreenState extends State<AuthScreen>
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        // ── Same gradient as splash & role selection ──
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -54,10 +55,11 @@ class _AuthScreenState extends State<AuthScreen>
         child: SafeArea(
           child: Column(
             children: [
-              // ── Top bar: only back button ──
+
+              // ── Top bar: back button ──
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24, vertical: 20),
                 child: Row(
                   children: [
                     GestureDetector(
@@ -129,7 +131,6 @@ class _AuthScreenState extends State<AuthScreen>
     );
   }
 
-  // ── Tab bar: Sign In / Sign Up ──
   Widget _buildTabBar() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
@@ -202,12 +203,26 @@ class _SignInFormState extends State<_SignInForm> {
         password: _passwordController.text,
       );
       if (mounted && user != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Welcome back ${user.name}! 👋'),
-            backgroundColor: widget.roleColor,
-          ),
-        );
+        // ── Navigate based on role ──
+        if (user.isStudent) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => StudentHomeScreen(
+                studentName: user.name,
+                university: user.university,
+              ),
+            ),
+          );
+        } else if (user.isLandlord) {
+          // TODO: Navigate to LandlordDashboardScreen
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Welcome back ${user.name}! 👋'),
+              backgroundColor: widget.roleColor,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -238,8 +253,8 @@ class _SignInFormState extends State<_SignInForm> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
             title: Text(
               'Email Sent! 📧',
               style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
@@ -285,8 +300,6 @@ class _SignInFormState extends State<_SignInForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-
-            // ── Title centered ──
             Center(
               child: Text(
                 'Sign in to your ${widget.role} account',
@@ -298,10 +311,7 @@ class _SignInFormState extends State<_SignInForm> {
                 ),
               ),
             ),
-
             const SizedBox(height: 28),
-
-            // ── Email ──
             _buildLabel('Email Address'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -311,16 +321,12 @@ class _SignInFormState extends State<_SignInForm> {
               roleColor: widget.roleColor,
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
-                if (value == null || value.isEmpty)
-                  return 'Please enter your email';
+                if (value == null || value.isEmpty) return 'Please enter your email';
                 if (!value.contains('@')) return 'Please enter a valid email';
                 return null;
               },
             ),
-
             const SizedBox(height: 20),
-
-            // ── Password ──
             _buildLabel('Password'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -341,17 +347,12 @@ class _SignInFormState extends State<_SignInForm> {
                     setState(() => _passwordVisible = !_passwordVisible),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty)
-                  return 'Please enter your password';
-                if (value.length < 6)
-                  return 'Password must be at least 6 characters';
+                if (value == null || value.isEmpty) return 'Please enter your password';
+                if (value.length < 6) return 'Password must be at least 6 characters';
                 return null;
               },
             ),
-
             const SizedBox(height: 10),
-
-            // ── Forgot Password ──
             Align(
               alignment: Alignment.centerRight,
               child: GestureDetector(
@@ -366,17 +367,13 @@ class _SignInFormState extends State<_SignInForm> {
                 ),
               ),
             ),
-
             const SizedBox(height: 28),
-
-            // ── Sign In Button ──
             _buildButton(
               label: 'Sign In',
               isLoading: _isLoading,
               roleColor: widget.roleColor,
               onTap: _signIn,
             ),
-
             const SizedBox(height: 24),
           ],
         ),
@@ -467,15 +464,31 @@ class _SignUpFormState extends State<_SignUpForm> {
         phone: _phoneController.text,
         password: _passwordController.text,
         role: widget.role,
-        university: widget.role == 'student' ? (_selectedUniversity ?? '') : '',
+        university: widget.role == 'student'
+            ? (_selectedUniversity ?? '')
+            : '',
       );
       if (mounted && user != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Welcome to UniBoard ${user.name}! 🎉'),
-            backgroundColor: widget.roleColor,
-          ),
-        );
+        // ── Navigate based on role after registration ──
+        if (user.isStudent) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => StudentHomeScreen(
+                studentName: user.name,
+                university: user.university,
+              ),
+            ),
+          );
+        } else if (user.isLandlord) {
+          // TODO: Navigate to LandlordDashboardScreen
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Welcome to UniBoard ${user.name}! 🎉'),
+              backgroundColor: widget.roleColor,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -500,8 +513,6 @@ class _SignUpFormState extends State<_SignUpForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-
-            // ── Title centered ──
             Center(
               child: Text(
                 'Join Uniboard as a ${widget.role}',
@@ -513,10 +524,7 @@ class _SignUpFormState extends State<_SignUpForm> {
                 ),
               ),
             ),
-
             const SizedBox(height: 24),
-
-            // ── Full Name ──
             _buildLabel('Full name'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -525,15 +533,11 @@ class _SignUpFormState extends State<_SignUpForm> {
               icon: Icons.person_outline_rounded,
               roleColor: widget.roleColor,
               validator: (value) {
-                if (value == null || value.isEmpty)
-                  return 'Please enter your name';
+                if (value == null || value.isEmpty) return 'Please enter your name';
                 return null;
               },
             ),
-
             const SizedBox(height: 16),
-
-            // ── Email ──
             _buildLabel('Email Address'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -543,16 +547,12 @@ class _SignUpFormState extends State<_SignUpForm> {
               roleColor: widget.roleColor,
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
-                if (value == null || value.isEmpty)
-                  return 'Please enter your email';
+                if (value == null || value.isEmpty) return 'Please enter your email';
                 if (!value.contains('@')) return 'Please enter a valid email';
                 return null;
               },
             ),
-
             const SizedBox(height: 16),
-
-            // ── Phone ──
             _buildLabel('Phone Number'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -562,23 +562,17 @@ class _SignUpFormState extends State<_SignUpForm> {
               roleColor: widget.roleColor,
               keyboardType: TextInputType.phone,
               validator: (value) {
-                if (value == null || value.isEmpty)
-                  return 'Please enter your phone number';
+                if (value == null || value.isEmpty) return 'Please enter your phone number';
                 return null;
               },
             ),
-
             const SizedBox(height: 16),
-
-            // ── University (students only) ──
             if (widget.role == 'student') ...[
               _buildLabel('University'),
               const SizedBox(height: 8),
               _buildUniversityDropdown(widget.roleColor),
               const SizedBox(height: 16),
             ],
-
-            // ── Password ──
             _buildLabel('Password'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -599,17 +593,12 @@ class _SignUpFormState extends State<_SignUpForm> {
                     setState(() => _passwordVisible = !_passwordVisible),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty)
-                  return 'Please enter a password';
-                if (value.length < 6)
-                  return 'Password must be at least 6 characters';
+                if (value == null || value.isEmpty) return 'Please enter a password';
+                if (value.length < 6) return 'Password must be at least 6 characters';
                 return null;
               },
             ),
-
             const SizedBox(height: 16),
-
-            // ── Confirm Password ──
             _buildLabel('Confirm Password'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -630,24 +619,18 @@ class _SignUpFormState extends State<_SignUpForm> {
                     () => _confirmPasswordVisible = !_confirmPasswordVisible),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty)
-                  return 'Please confirm your password';
-                if (value != _passwordController.text)
-                  return 'Passwords do not match';
+                if (value == null || value.isEmpty) return 'Please confirm your password';
+                if (value != _passwordController.text) return 'Passwords do not match';
                 return null;
               },
             ),
-
             const SizedBox(height: 28),
-
-            // ── Create Account Button ──
             _buildButton(
               label: 'Create Account',
               isLoading: _isLoading,
               roleColor: widget.roleColor,
               onTap: _signUp,
             ),
-
             const SizedBox(height: 24),
           ],
         ),
@@ -746,12 +729,10 @@ Widget _buildTextField({
         fontSize: 14,
         color: Colors.grey.shade400,
       ),
-      // ── Grey icon matching design ──
       prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 20),
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: const Color(0xFFF2F2F2),
-      // ── No visible border ──
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
@@ -768,7 +749,8 @@ Widget _buildTextField({
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: Colors.red, width: 2),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
   );
 }
