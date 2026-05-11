@@ -3,11 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../services/auth_service.dart';
 
-// AuthScreen handles both Login and Register for Student and Landlord.
-// Admin has a separate web panel - not in this mobile app.
-// The role is passed from RoleSelectionScreen.
 class AuthScreen extends StatefulWidget {
-  final String role; // 'student' or 'landlord'
+  final String role;
   const AuthScreen({super.key, required this.role});
 
   @override
@@ -17,7 +14,6 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen>
     with SingleTickerProviderStateMixin {
 
-  // Controls the Sign In / Sign Up tab switching
   late TabController _tabController;
 
   @override
@@ -32,24 +28,10 @@ class _AuthScreenState extends State<AuthScreen>
     super.dispose();
   }
 
-  // Returns accent color based on selected role
   Color get _roleColor {
-    switch (widget.role) {
-      case 'landlord':
-        return AppColors.landlordColor;
-      default:
-        return AppColors.studentColor;
-    }
-  }
-
-  // Returns icon based on selected role
-  IconData get _roleIcon {
-    switch (widget.role) {
-      case 'landlord':
-        return Icons.house_rounded;
-      default:
-        return Icons.school_rounded;
-    }
+    return widget.role == 'landlord'
+        ? const Color(0xFFF09418)
+        : const Color(0xFF2B658B);
   }
 
   @override
@@ -58,34 +40,70 @@ class _AuthScreenState extends State<AuthScreen>
       body: Container(
         width: double.infinity,
         height: double.infinity,
+        // ── Same gradient as splash & role selection ──
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            stops: [0.0, 1.0],
             colors: [
-              Color(0xFF0A1628),
-              Color(0xFF0D47A1),
-              Color(0xFF1565C0),
+              Color(0xFFF1F9EE),
+              Color(0xFFF1F3FA),
             ],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              _buildHeader(),
-              const SizedBox(height: 24),
+
+              // ── Top bar: only back button ──
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24, vertical: 20),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: _roleColor,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back_ios_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 100),
+
+              // ── White bottom sheet ──
               Expanded(
                 child: Container(
                   decoration: const BoxDecoration(
-                    color: Color(0xFFF8FAFF),
+                    color: Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(32),
                       topRight: Radius.circular(32),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 20,
+                        offset: Offset(0, -4),
+                      ),
+                    ],
                   ),
                   child: Column(
                     children: [
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 24),
                       _buildTabBar(),
                       Expanded(
                         child: TabBarView(
@@ -113,104 +131,25 @@ class _AuthScreenState extends State<AuthScreen>
     );
   }
 
-  // Top header with back button and role badge
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      child: Row(
-        children: [
-          // Back button
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white.withOpacity(0.3)),
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_rounded,
-                color: Colors.white,
-                size: 18,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-
-          // Role badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: _roleColor.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: _roleColor.withOpacity(0.4)),
-            ),
-            child: Row(
-              children: [
-                Icon(_roleIcon, color: _roleColor, size: 18),
-                const SizedBox(width: 8),
-                Text(
-                  widget.role[0].toUpperCase() + widget.role.substring(1),
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const Spacer(),
-
-          // App logo
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.3)),
-            ),
-            child: const Icon(
-              Icons.home_rounded,
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Sign In / Sign Up tab bar
+  // ── Tab bar: Sign In / Sign Up ──
   Widget _buildTabBar() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: TabBar(
         controller: _tabController,
         indicator: BoxDecoration(
           color: _roleColor,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: _roleColor.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(10),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
         dividerColor: Colors.transparent,
         labelColor: Colors.white,
-        unselectedLabelColor: Colors.grey.shade600,
+        unselectedLabelColor: Colors.grey.shade500,
         labelStyle: GoogleFonts.poppins(
           fontWeight: FontWeight.w600,
           fontSize: 14,
@@ -230,7 +169,6 @@ class _AuthScreenState extends State<AuthScreen>
 
 // ─────────────────────────────────────────────
 // SIGN IN FORM
-// Connected to Firebase Auth via AuthService
 // ─────────────────────────────────────────────
 class _SignInForm extends StatefulWidget {
   final String role;
@@ -248,7 +186,6 @@ class _SignInFormState extends State<_SignInForm> {
   bool _passwordVisible = false;
   bool _isLoading = false;
 
-  // AuthService instance - handles all Firebase calls
   final AuthService _authService = AuthService();
 
   @override
@@ -258,21 +195,14 @@ class _SignInFormState extends State<_SignInForm> {
     super.dispose();
   }
 
-  // Sign In button handler
-  // Calls Firebase Auth via AuthService
   Future<void> _signIn() async {
-    // Validate form fields first
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
-
     try {
-      // Call Firebase login via AuthService
       final user = await _authService.loginWithEmail(
         email: _emailController.text,
         password: _passwordController.text,
       );
-
       if (mounted && user != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -280,13 +210,8 @@ class _SignInFormState extends State<_SignInForm> {
             backgroundColor: widget.roleColor,
           ),
         );
-
-        // TODO: Navigate to correct dashboard after building them
-        // if (user.isStudent) → StudentHomeScreen
-        // if (user.isLandlord) → LandlordDashboardScreen
       }
     } catch (e) {
-      // Show Firebase error message e.g. wrong password, user not found
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -296,14 +221,10 @@ class _SignInFormState extends State<_SignInForm> {
         );
       }
     }
-
     if (mounted) setState(() => _isLoading = false);
   }
 
-  // Forgot Password handler
-  // Sends password reset email via Firebase
   Future<void> _forgotPassword() async {
-    // Email must be entered first
     if (_emailController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -313,27 +234,20 @@ class _SignInFormState extends State<_SignInForm> {
       );
       return;
     }
-
     try {
-      // Send reset email via Firebase
-      await _authService.sendPasswordResetEmail(
-        _emailController.text,
-      );
-
-      // Show success dialog
+      await _authService.sendPasswordResetEmail(_emailController.text);
       if (mounted) {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
+                borderRadius: BorderRadius.circular(20)),
             title: Text(
               'Email Sent! 📧',
               style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
             ),
             content: Text(
-              'A password reset link has been sent to ${_emailController.text}. Please check your inbox.',
+              'A password reset link has been sent to ${_emailController.text}.',
               style: GoogleFonts.poppins(fontSize: 14),
             ),
             actions: [
@@ -372,28 +286,24 @@ class _SignInFormState extends State<_SignInForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 8),
+            const SizedBox(height: 20),
 
-            Text(
-              'Welcome back! 👋',
-              style: GoogleFonts.poppins(
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF0A1628),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Sign in to your ${widget.role} account',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.grey.shade600,
+            // ── Title centered ──
+            Center(
+              child: Text(
+                'Sign in to your ${widget.role} account',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A1A2E),
+                ),
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
-            // Email field
+            // ── Email ──
             _buildLabel('Email Address'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -403,19 +313,15 @@ class _SignInFormState extends State<_SignInForm> {
               roleColor: widget.roleColor,
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                if (!value.contains('@')) {
-                  return 'Please enter a valid email';
-                }
+                if (value == null || value.isEmpty) return 'Please enter your email';
+                if (!value.contains('@')) return 'Please enter a valid email';
                 return null;
               },
             ),
 
             const SizedBox(height: 20),
 
-            // Password field
+            // ── Password ──
             _buildLabel('Password'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -429,26 +335,22 @@ class _SignInFormState extends State<_SignInForm> {
                   _passwordVisible
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  color: Colors.grey.shade500,
+                  color: Colors.grey.shade400,
                   size: 20,
                 ),
                 onPressed: () =>
                     setState(() => _passwordVisible = !_passwordVisible),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your password';
-                }
-                if (value.length < 6) {
-                  return 'Password must be at least 6 characters';
-                }
+                if (value == null || value.isEmpty) return 'Please enter your password';
+                if (value.length < 6) return 'Password must be at least 6 characters';
                 return null;
               },
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
-            // Forgot password - connected to Firebase
+            // ── Forgot Password ──
             Align(
               alignment: Alignment.centerRight,
               child: GestureDetector(
@@ -464,8 +366,9 @@ class _SignInFormState extends State<_SignInForm> {
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
+            // ── Sign In Button ──
             _buildButton(
               label: 'Sign In',
               isLoading: _isLoading,
@@ -474,8 +377,6 @@ class _SignInFormState extends State<_SignInForm> {
             ),
 
             const SizedBox(height: 24),
-            _buildBottomBadge(),
-            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -485,7 +386,6 @@ class _SignInFormState extends State<_SignInForm> {
 
 // ─────────────────────────────────────────────
 // SIGN UP FORM
-// Connected to Firebase Auth via AuthService
 // ─────────────────────────────────────────────
 class _SignUpForm extends StatefulWidget {
   final String role;
@@ -508,10 +408,8 @@ class _SignUpFormState extends State<_SignUpForm> {
   bool _isLoading = false;
   String? _selectedUniversity;
 
-  // AuthService instance - handles all Firebase calls
   final AuthService _authService = AuthService();
 
-  // Sri Lankan universities list
   static const List<String> _universities = [
     'University of Colombo',
     'University of Moratuwa',
@@ -549,12 +447,8 @@ class _SignUpFormState extends State<_SignUpForm> {
     super.dispose();
   }
 
-  // Sign Up button handler
-  // Calls Firebase Auth via AuthService
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
-
-    // University required for students
     if (widget.role == 'student' && _selectedUniversity == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -564,23 +458,16 @@ class _SignUpFormState extends State<_SignUpForm> {
       );
       return;
     }
-
     setState(() => _isLoading = true);
-
     try {
-      // Call Firebase registration via AuthService
       final user = await _authService.registerWithEmail(
         name: _nameController.text,
         email: _emailController.text,
         phone: _phoneController.text,
         password: _passwordController.text,
         role: widget.role,
-        // Pass university for students, empty string for landlords
-        university: widget.role == 'student'
-            ? (_selectedUniversity ?? '')
-            : '',
+        university: widget.role == 'student' ? (_selectedUniversity ?? '') : '',
       );
-
       if (mounted && user != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -588,13 +475,8 @@ class _SignUpFormState extends State<_SignUpForm> {
             backgroundColor: widget.roleColor,
           ),
         );
-
-        // TODO: Navigate to correct dashboard after building them
-        // if (user.isStudent) → StudentHomeScreen
-        // if (user.isLandlord) → LandlordDashboardScreen
       }
     } catch (e) {
-      // Show Firebase error message e.g. email already in use
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -604,7 +486,6 @@ class _SignUpFormState extends State<_SignUpForm> {
         );
       }
     }
-
     if (mounted) setState(() => _isLoading = false);
   }
 
@@ -617,29 +498,25 @@ class _SignUpFormState extends State<_SignUpForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 8),
+            const SizedBox(height: 20),
 
-            Text(
-              'Create Account ✨',
-              style: GoogleFonts.poppins(
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF0A1628),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Join UniBoard as a ${widget.role}',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.grey.shade600,
+            // ── Title centered ──
+            Center(
+              child: Text(
+                'Join Uniboard as a ${widget.role}',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A1A2E),
+                ),
               ),
             ),
 
             const SizedBox(height: 24),
 
-            // Full Name
-            _buildLabel('Full Name'),
+            // ── Full Name ──
+            _buildLabel('Full name'),
             const SizedBox(height: 8),
             _buildTextField(
               controller: _nameController,
@@ -647,16 +524,14 @@ class _SignUpFormState extends State<_SignUpForm> {
               icon: Icons.person_outline_rounded,
               roleColor: widget.roleColor,
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your name';
-                }
+                if (value == null || value.isEmpty) return 'Please enter your name';
                 return null;
               },
             ),
 
             const SizedBox(height: 16),
 
-            // Email
+            // ── Email ──
             _buildLabel('Email Address'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -666,19 +541,15 @@ class _SignUpFormState extends State<_SignUpForm> {
               roleColor: widget.roleColor,
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                if (!value.contains('@')) {
-                  return 'Please enter a valid email';
-                }
+                if (value == null || value.isEmpty) return 'Please enter your email';
+                if (!value.contains('@')) return 'Please enter a valid email';
                 return null;
               },
             ),
 
             const SizedBox(height: 16),
 
-            // Phone
+            // ── Phone ──
             _buildLabel('Phone Number'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -688,29 +559,27 @@ class _SignUpFormState extends State<_SignUpForm> {
               roleColor: widget.roleColor,
               keyboardType: TextInputType.phone,
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your phone number';
-                }
+                if (value == null || value.isEmpty) return 'Please enter your phone number';
                 return null;
               },
             ),
 
             const SizedBox(height: 16),
 
-            // University dropdown - students only
+            // ── University (students only) ──
             if (widget.role == 'student') ...[
               _buildLabel('University'),
               const SizedBox(height: 8),
-              _buildUniversityDropdown(),
+              _buildUniversityDropdown(widget.roleColor),
               const SizedBox(height: 16),
             ],
 
-            // Password
+            // ── Password ──
             _buildLabel('Password'),
             const SizedBox(height: 8),
             _buildTextField(
               controller: _passwordController,
-              hint: 'Create a password',
+              hint: 'Enter your password',
               icon: Icons.lock_outline_rounded,
               roleColor: widget.roleColor,
               obscureText: !_passwordVisible,
@@ -719,26 +588,22 @@ class _SignUpFormState extends State<_SignUpForm> {
                   _passwordVisible
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  color: Colors.grey.shade500,
+                  color: Colors.grey.shade400,
                   size: 20,
                 ),
                 onPressed: () =>
                     setState(() => _passwordVisible = !_passwordVisible),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a password';
-                }
-                if (value.length < 6) {
-                  return 'Password must be at least 6 characters';
-                }
+                if (value == null || value.isEmpty) return 'Please enter a password';
+                if (value.length < 6) return 'Password must be at least 6 characters';
                 return null;
               },
             ),
 
             const SizedBox(height: 16),
 
-            // Confirm Password
+            // ── Confirm Password ──
             _buildLabel('Confirm Password'),
             const SizedBox(height: 8),
             _buildTextField(
@@ -752,25 +617,22 @@ class _SignUpFormState extends State<_SignUpForm> {
                   _confirmPasswordVisible
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  color: Colors.grey.shade500,
+                  color: Colors.grey.shade400,
                   size: 20,
                 ),
                 onPressed: () => setState(
                     () => _confirmPasswordVisible = !_confirmPasswordVisible),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please confirm your password';
-                }
-                if (value != _passwordController.text) {
-                  return 'Passwords do not match';
-                }
+                if (value == null || value.isEmpty) return 'Please confirm your password';
+                if (value != _passwordController.text) return 'Passwords do not match';
                 return null;
               },
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
+            // ── Create Account Button ──
             _buildButton(
               label: 'Create Account',
               isLoading: _isLoading,
@@ -779,37 +641,29 @@ class _SignUpFormState extends State<_SignUpForm> {
             ),
 
             const SizedBox(height: 24),
-            _buildBottomBadge(),
-            const SizedBox(height: 16),
           ],
         ),
       ),
     );
   }
 
-  // University dropdown widget
-  Widget _buildUniversityDropdown() {
+  Widget _buildUniversityDropdown(Color roleColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFF2F2F2),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: _selectedUniversity == null
-              ? Colors.grey.shade200
-              : widget.roleColor,
-          width: 1.5,
-        ),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: _selectedUniversity,
           hint: Row(
             children: [
-              Icon(Icons.school_outlined, color: widget.roleColor, size: 20),
+              Icon(Icons.school_outlined,
+                  color: Colors.grey.shade400, size: 20),
               const SizedBox(width: 12),
               Text(
-                'Select your university',
+                'Enter your University',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   color: Colors.grey.shade400,
@@ -820,11 +674,11 @@ class _SignUpFormState extends State<_SignUpForm> {
           isExpanded: true,
           icon: Icon(
             Icons.keyboard_arrow_down_rounded,
-            color: widget.roleColor,
+            color: Colors.grey.shade400,
           ),
           style: GoogleFonts.poppins(
             fontSize: 14,
-            color: const Color(0xFF0A1628),
+            color: const Color(0xFF1A1A2E),
           ),
           onChanged: (String? value) {
             setState(() => _selectedUniversity = value);
@@ -846,16 +700,15 @@ class _SignUpFormState extends State<_SignUpForm> {
 
 // ─────────────────────────────────────────────
 // SHARED HELPER WIDGETS
-// Used by both SignIn and SignUp forms
 // ─────────────────────────────────────────────
 
 Widget _buildLabel(String text) {
   return Text(
     text,
     style: GoogleFonts.poppins(
-      fontSize: 13,
+      fontSize: 14,
       fontWeight: FontWeight.w600,
-      color: const Color(0xFF0A1628),
+      color: const Color(0xFF1A1A2E),
     ),
   );
 }
@@ -877,7 +730,7 @@ Widget _buildTextField({
     validator: validator,
     style: GoogleFonts.poppins(
       fontSize: 14,
-      color: const Color(0xFF0A1628),
+      color: const Color(0xFF1A1A2E),
     ),
     decoration: InputDecoration(
       hintText: hint,
@@ -885,17 +738,19 @@ Widget _buildTextField({
         fontSize: 14,
         color: Colors.grey.shade400,
       ),
-      prefixIcon: Icon(icon, color: roleColor, size: 20),
+      // ── Grey icon matching design ──
+      prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 20),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: Colors.white,
+      fillColor: const Color(0xFFF2F2F2),
+      // ── No visible border ──
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+        borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: roleColor, width: 2),
+        borderSide: BorderSide(color: roleColor, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
@@ -927,7 +782,7 @@ Widget _buildButton({
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: roleColor.withOpacity(0.4),
+            color: roleColor.withOpacity(0.35),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -951,27 +806,6 @@ Widget _buildButton({
                   color: Colors.white,
                 ),
               ),
-      ),
-    ),
-  );
-}
-
-Widget _buildBottomBadge() {
-  return Center(
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Text(
-        '🇱🇰  Made for Sri Lankan Students',
-        style: GoogleFonts.poppins(
-          fontSize: 12,
-          color: Colors.grey.shade500,
-          fontWeight: FontWeight.w500,
-        ),
       ),
     ),
   );
