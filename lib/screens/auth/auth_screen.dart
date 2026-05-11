@@ -82,7 +82,7 @@ class _AuthScreenState extends State<AuthScreen>
                 ),
               ),
 
-              const SizedBox(height: 100),
+              const SizedBox(height: 50),
 
               // ── White bottom sheet ──
               Expanded(
