@@ -39,8 +39,13 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       'rating': 4.5,
       'roomType': 'Shared',
       'slotsLeft': 2,
+      'totalCapacity': 4,
       'isVerified': true,
       'color': Color(0xFF2B658B),
+      'landlordName': 'Kamal Silva',
+      'gender': 'Any',
+      'amenities': ['WiFi', 'AC', 'Cooking', 'Parking', 'Attached Bath'],
+      'houseRules': 'Gate closes at 9:00 PM. No visitors after 8:00 PM. Quiet hours after 10:00 PM. No smoking inside.',
     },
     {
       'title': 'Cozy Single Room, Kelaniya',
@@ -50,8 +55,13 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       'rating': 4.8,
       'roomType': 'Single',
       'slotsLeft': 4,
+      'totalCapacity': 4,
       'isVerified': true,
       'color': Color(0xFFF09418),
+      'landlordName': 'Nimal Perera',
+      'gender': 'Male',
+      'amenities': ['WiFi', 'AC', 'Laundry', 'Security'],
+      'houseRules': 'Gate closes at 10:00 PM. No loud music. Keep common areas clean.',
     },
     {
       'title': 'Double Room near UOM',
@@ -61,8 +71,13 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       'rating': 4.2,
       'roomType': 'Double',
       'slotsLeft': 1,
+      'totalCapacity': 2,
       'isVerified': true,
       'color': Color(0xFF3B8B65),
+      'landlordName': 'Sunil Fernando',
+      'gender': 'Female',
+      'amenities': ['WiFi', 'Hot Water', 'Cooking', 'Garden'],
+      'houseRules': 'Gate closes at 9:30 PM. Visitors allowed until 7:00 PM only.',
     },
   ];
 
@@ -89,16 +104,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 8),
-
-                      // Header widget
                       HomeHeader(studentName: widget.studentName),
                       const SizedBox(height: 16),
-
-                      // Search bar widget
                       const HomeSearchBar(),
                       const SizedBox(height: 14),
-
-                      // Filter chips widget
                       HomeFilterChips(
                         selectedIndex: _selectedFilter,
                         onFilterSelected: (index) {
@@ -106,12 +115,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-
-                      // Section title
                       _buildSectionTitle(),
                       const SizedBox(height: 12),
-
-                      // Listing cards
                       ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -121,14 +126,11 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                           return ListingCard(listing: _listings[index]);
                         },
                       ),
-
                       const SizedBox(height: 16),
                     ],
                   ),
                 ),
               ),
-
-              // Bottom nav widget
               BottomNavBar(
                 selectedIndex: _selectedNav,
                 onItemSelected: (index) {
@@ -142,16 +144,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     );
   }
 
-  // Section title with "See all" button
   Widget _buildSectionTitle() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
+          const Text(
             'Nearby Boardings',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
               color: Color(0xFF1A1A2E),
