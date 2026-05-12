@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../screens/student/listing_detail_screen.dart';
 
 // ─────────────────────────────────────────────
 // LISTING CARD WIDGET
 // Shows individual boarding listing details.
-// Used in Student Home Screen listing list.
+// Tapping navigates to ListingDetailScreen.
 // ─────────────────────────────────────────────
 class ListingCard extends StatefulWidget {
   final Map<String, dynamic> listing;
@@ -26,7 +27,13 @@ class _ListingCardState extends State<ListingCard> {
 
     return GestureDetector(
       onTap: () {
-        // TODO: Navigate to listing detail screen
+        // Navigate to listing detail screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ListingDetailScreen(listing: widget.listing),
+          ),
+        );
       },
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) => setState(() => _isPressed = false),
@@ -51,7 +58,7 @@ class _ListingCardState extends State<ListingCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildImageArea(cardColor, slotsLeft, listing['roomType']),
-            _buildCardBody(listing, slotsLeft),
+            _buildCardBody(listing),
           ],
         ),
       ),
@@ -128,7 +135,7 @@ class _ListingCardState extends State<ListingCard> {
   }
 
   // ── Card body with details ──
-  Widget _buildCardBody(Map<String, dynamic> listing, int slotsLeft) {
+  Widget _buildCardBody(Map<String, dynamic> listing) {
     return Padding(
       padding: const EdgeInsets.all(14),
       child: Column(
@@ -215,7 +222,7 @@ class _ListingCardState extends State<ListingCard> {
                   ],
                 ),
               ),
-              if (listing['isVerified']) const _VerifiedBadge(),
+              if (listing['isVerified'] == true) const _VerifiedBadge(),
             ],
           ),
         ],
@@ -223,7 +230,6 @@ class _ListingCardState extends State<ListingCard> {
     );
   }
 
-  // Format price with commas e.g. 8,500
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
@@ -234,7 +240,6 @@ class _ListingCardState extends State<ListingCard> {
 
 // ─────────────────────────────────────────────
 // BADGE WIDGET
-// Reusable small badge used in card image area
 // ─────────────────────────────────────────────
 class _Badge extends StatelessWidget {
   final String label;
@@ -269,7 +274,6 @@ class _Badge extends StatelessWidget {
 
 // ─────────────────────────────────────────────
 // VERIFIED BADGE WIDGET
-// Green badge shown on verified listings
 // ─────────────────────────────────────────────
 class _VerifiedBadge extends StatelessWidget {
   const _VerifiedBadge();
