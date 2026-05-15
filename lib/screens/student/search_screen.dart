@@ -173,12 +173,35 @@ class _SearchScreenState extends State<SearchScreen> {
 
   // ── Header ──
   Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+    child: Row(
+      children: [
+        // Back button
+        GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFFDDE3F0),
+              ),
+            ),
+            child: const Icon(
+              Icons.arrow_back_ios_rounded,
+              color: Color(0xFF2B658B),
+              size: 18,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+
+        // Title
+        Expanded(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
@@ -198,22 +221,25 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ],
           ),
-          if (_hasSearched)
-            GestureDetector(
-              onTap: _clearFilters,
-              child: Text(
-                'Clear',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: const Color(0xFFF09418),
-                  fontWeight: FontWeight.w600,
-                ),
+        ),
+
+        // Clear button
+        if (_hasSearched)
+          GestureDetector(
+            onTap: _clearFilters,
+            child: Text(
+              'Clear',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: const Color(0xFFF09418),
+                fontWeight: FontWeight.w600,
               ),
             ),
-        ],
-      ),
-    );
-  }
+          ),
+      ],
+    ),
+  );
+}
 
   // ── University filter full width ──
   Widget _buildUniversityFilter() {
