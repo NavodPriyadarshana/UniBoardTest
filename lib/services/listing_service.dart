@@ -77,6 +77,9 @@ class ListingService {
 
   // ─────────────────────────────────────────────
   // SEARCH LISTINGS
+  // Fetches all listings then filters locally
+  // This allows partial matching for university
+  // and location — more flexible than exact match
   // ─────────────────────────────────────────────
   Future<List<ListingModel>> searchListings({
     String? university,
@@ -87,26 +90,49 @@ class ListingService {
   }) async {
     try {
       print('🔍 Searching listings...');
+
+      // Start with Firestore filters for indexed fields
       Query query = _firestore.collection(_collection);
 
-      if (university != null && university.isNotEmpty) {
-        query = query.where('university', isEqualTo: university);
-      }
-      if (city != null && city.isNotEmpty) {
-        query = query.where('city', isEqualTo: city);
-      }
       if (roomType != null && roomType.isNotEmpty) {
         query = query.where('roomType', isEqualTo: roomType);
       }
       if (gender != null && gender.isNotEmpty && gender != 'Any') {
         query = query.where('genderPreference', isEqualTo: gender);
       }
+      if (maxPrice != null) {
+        query = query.where('pricePerSlot',
+            isLessThanOrEqualTo: maxPrice);
+      }
 
       final QuerySnapshot snapshot = await query.get();
-      print('✅ Found ${snapshot.docs.length} listings');
-      return snapshot.docs
+      List<ListingModel> results = snapshot.docs
           .map((doc) => ListingModel.fromFirestore(doc))
           .toList();
+
+      // ── Local filtering for university and location ──
+      // Uses contains() for partial matching
+      // This covers all faculty areas of a university
+      if (university != null && university.isNotEmpty) {
+        final uniLower = university.toLowerCase();
+        results = results.where((l) {
+          return l.university.toLowerCase().contains(uniLower) ||
+              l.location.toLowerCase().contains(uniLower) ||
+              l.city.toLowerCase().contains(uniLower) ||
+              uniLower.contains(l.city.toLowerCase());
+        }).toList();
+      }
+
+      if (city != null && city.isNotEmpty) {
+        final cityLower = city.toLowerCase();
+        results = results.where((l) {
+          return l.city.toLowerCase().contains(cityLower) ||
+              l.location.toLowerCase().contains(cityLower);
+        }).toList();
+      }
+
+      print('✅ Found ${results.length} listings');
+      return results;
     } catch (e) {
       print('❌ Error searching listings: $e');
       return [];

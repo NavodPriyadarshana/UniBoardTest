@@ -7,6 +7,7 @@ import '../../widgets/student/home_filter_chips.dart';
 import '../../widgets/student/listing_card.dart';
 import '../../widgets/student/bottom_nav_bar.dart';
 import 'student_profile_screen.dart';
+import 'search_screen.dart';
 
 // ─────────────────────────────────────────────
 // STUDENT HOME SCREEN
@@ -166,7 +167,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               BottomNavBar(
                 selectedIndex: _selectedNav,
                 onItemSelected: (index) {
-                  if (index == 4) {
+                  if (index == 1) {
+                    // Navigate to search screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SearchScreen(),
+                      ),
+                    );
+                  } else if (index == 4) {
                     // Navigate to profile screen
                     Navigator.push(
                       context,
