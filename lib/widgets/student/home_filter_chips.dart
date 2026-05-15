@@ -3,8 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 // ─────────────────────────────────────────────
 // HOME FILTER CHIPS WIDGET
-// Horizontally scrollable filter options.
-// Selected chip shown in blue, others in white.
+// Filters listings by room type and gender.
 // ─────────────────────────────────────────────
 class HomeFilterChips extends StatelessWidget {
 
@@ -17,12 +16,13 @@ class HomeFilterChips extends StatelessWidget {
     required this.onFilterSelected,
   });
 
-  static const List<String> _filters = [
-    'All',
-    'Room Type',
-    'Price',
-    'Distance',
-    'Gender',
+  static const List<Map<String, dynamic>> _filters = [
+    {'label': 'All',    'icon': Icons.home_rounded},
+    {'label': 'Single', 'icon': Icons.person_rounded},
+    {'label': 'Double', 'icon': Icons.people_rounded},
+    {'label': 'Shared', 'icon': Icons.groups_rounded},
+    {'label': 'Male',   'icon': Icons.male_rounded},
+    {'label': 'Female', 'icon': Icons.female_rounded},
   ];
 
   @override
@@ -35,14 +35,20 @@ class HomeFilterChips extends StatelessWidget {
         itemCount: _filters.length,
         itemBuilder: (context, index) {
           final bool isSelected = selectedIndex == index;
+          final String label = _filters[index]['label'];
+          final IconData icon = _filters[index]['icon'];
+
           return GestureDetector(
             onTap: () => onFilterSelected(index),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF2B658B) : Colors.white,
+                color: isSelected
+                    ? const Color(0xFF2B658B)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isSelected
@@ -50,13 +56,27 @@ class HomeFilterChips extends StatelessWidget {
                       : const Color(0xFFDDE3F0),
                 ),
               ),
-              child: Text(
-                _filters[index],
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: isSelected ? Colors.white : const Color(0xFF2B658B),
-                ),
+              child: Row(
+                children: [
+                  Icon(
+                    icon,
+                    size: 14,
+                    color: isSelected
+                        ? Colors.white
+                        : const Color(0xFF2B658B),
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    label,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF2B658B),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
