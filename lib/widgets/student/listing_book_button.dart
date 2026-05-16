@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../screens/student/booking_request_screen.dart';
 
 // ─────────────────────────────────────────────
 // LISTING BOOK BUTTON WIDGET
 // Pinned at bottom — Request Booking button
+// Navigates to BookingRequestScreen on tap
 // ─────────────────────────────────────────────
 class ListingBookButton extends StatelessWidget {
   final Map<String, dynamic> listing;
@@ -22,7 +24,14 @@ class ListingBookButton extends StatelessWidget {
       ),
       child: GestureDetector(
         onTap: () {
-          // TODO: Navigate to booking request screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BookingRequestScreen(
+                listing: listing,
+              ),
+            ),
+          );
         },
         child: Container(
           width: double.infinity,
