@@ -88,6 +88,7 @@ class _SearchScreenState extends State<SearchScreen> {
         maxPrice: _selectedMaxPrice,
       );
 
+      // Further filter by location text if entered
       final query = _searchController.text.trim().toLowerCase();
       final filtered = query.isEmpty
           ? results
@@ -95,7 +96,8 @@ class _SearchScreenState extends State<SearchScreen> {
               return l.title.toLowerCase().contains(query) ||
                   l.location.toLowerCase().contains(query) ||
                   l.city.toLowerCase().contains(query) ||
-                  l.university.toLowerCase().contains(query);
+                  l.university.toLowerCase().contains(query) ||
+                  l.description.toLowerCase().contains(query);
             }).toList();
 
       if (mounted) setState(() => _results = filtered);
@@ -173,73 +175,71 @@ class _SearchScreenState extends State<SearchScreen> {
 
   // ── Header ──
   Widget _buildHeader() {
-  return Padding(
-    padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
-    child: Row(
-      children: [
-        // Back button
-        GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFFDDE3F0),
-              ),
-            ),
-            child: const Icon(
-              Icons.arrow_back_ios_rounded,
-              color: Color(0xFF2B658B),
-              size: 18,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-
-        // Title
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Back button and Clear on same row ──
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Search Boardings',
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A1A2E),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: const Color(0xFFDDE3F0)),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_rounded,
+                    color: Color(0xFF2B658B),
+                    size: 18,
+                  ),
                 ),
               ),
-              Text(
-                'Find your perfect boarding',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  color: const Color(0xFF5C6B8A),
+              if (_hasSearched)
+                GestureDetector(
+                  onTap: _clearFilters,
+                  child: Text(
+                    'Clear',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: const Color(0xFFF09418),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-              ),
             ],
           ),
-        ),
 
-        // Clear button
-        if (_hasSearched)
-          GestureDetector(
-            onTap: _clearFilters,
-            child: Text(
-              'Clear',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                color: const Color(0xFFF09418),
-                fontWeight: FontWeight.w600,
-              ),
+          const SizedBox(height: 20),
+
+          // ── Title below back button ──
+          Text(
+            'Search Boardings',
+            style: GoogleFonts.poppins(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1A1A2E),
             ),
           ),
-      ],
-    ),
-  );
-}
+          const SizedBox(height: 4),
+          Text(
+            'Find your perfect boarding',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: const Color(0xFF5C6B8A),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   // ── University filter full width ──
   Widget _buildUniversityFilter() {
