@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../services/auth_service.dart';
 import '../student/student_home_screen.dart';
+import '../landlord/landlord_home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   final String role;
@@ -46,16 +47,12 @@ class _AuthScreenState extends State<AuthScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             stops: [0.0, 1.0],
-            colors: [
-              Color(0xFFF1F9EE),
-              Color(0xFFF1F3FA),
-            ],
+            colors: [Color(0xFFF1F9EE), Color(0xFFF1F3FA)],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-
               // ── Top bar: back button ──
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -150,13 +147,9 @@ class _AuthScreenState extends State<AuthScreen>
         labelColor: Colors.white,
         unselectedLabelColor: Colors.grey.shade500,
         labelStyle: GoogleFonts.poppins(
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-        ),
+            fontWeight: FontWeight.w600, fontSize: 14),
         unselectedLabelStyle: GoogleFonts.poppins(
-          fontWeight: FontWeight.w500,
-          fontSize: 14,
-        ),
+            fontWeight: FontWeight.w500, fontSize: 14),
         tabs: const [
           Tab(text: 'Sign In'),
           Tab(text: 'Sign Up'),
@@ -203,7 +196,6 @@ class _SignInFormState extends State<_SignInForm> {
         password: _passwordController.text,
       );
       if (mounted && user != null) {
-        // ── Navigate based on role ──
         if (user.isStudent) {
           Navigator.pushReplacement(
             context,
@@ -215,11 +207,13 @@ class _SignInFormState extends State<_SignInForm> {
             ),
           );
         } else if (user.isLandlord) {
-          // TODO: Navigate to LandlordDashboardScreen
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Welcome back ${user.name}! 👋'),
-              backgroundColor: widget.roleColor,
+          // ── Navigate to Landlord Dashboard ──
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => LandlordHomeScreen(
+                landlordName: user.name,
+              ),
             ),
           );
         }
@@ -248,17 +242,17 @@ class _SignInFormState extends State<_SignInForm> {
       return;
     }
     try {
-      await _authService.sendPasswordResetEmail(_emailController.text);
+      await _authService
+          .sendPasswordResetEmail(_emailController.text);
       if (mounted) {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20)),
-            title: Text(
-              'Email Sent! 📧',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-            ),
+            title: Text('Email Sent! 📧',
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w700)),
             content: Text(
               'A password reset link has been sent to ${_emailController.text}.',
               style: GoogleFonts.poppins(fontSize: 14),
@@ -266,13 +260,10 @@ class _SignInFormState extends State<_SignInForm> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'OK',
-                  style: GoogleFonts.poppins(
-                    color: widget.roleColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: Text('OK',
+                    style: GoogleFonts.poppins(
+                        color: widget.roleColor,
+                        fontWeight: FontWeight.w600)),
               ),
             ],
           ),
@@ -321,8 +312,10 @@ class _SignInFormState extends State<_SignInForm> {
               roleColor: widget.roleColor,
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter your email';
-                if (!value.contains('@')) return 'Please enter a valid email';
+                if (value == null || value.isEmpty)
+                  return 'Please enter your email';
+                if (!value.contains('@'))
+                  return 'Please enter a valid email';
                 return null;
               },
             ),
@@ -343,12 +336,14 @@ class _SignInFormState extends State<_SignInForm> {
                   color: Colors.grey.shade400,
                   size: 20,
                 ),
-                onPressed: () =>
-                    setState(() => _passwordVisible = !_passwordVisible),
+                onPressed: () => setState(
+                    () => _passwordVisible = !_passwordVisible),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter your password';
-                if (value.length < 6) return 'Password must be at least 6 characters';
+                if (value == null || value.isEmpty)
+                  return 'Please enter your password';
+                if (value.length < 6)
+                  return 'Password must be at least 6 characters';
                 return null;
               },
             ),
@@ -469,7 +464,6 @@ class _SignUpFormState extends State<_SignUpForm> {
             : '',
       );
       if (mounted && user != null) {
-        // ── Navigate based on role after registration ──
         if (user.isStudent) {
           Navigator.pushReplacement(
             context,
@@ -481,11 +475,13 @@ class _SignUpFormState extends State<_SignUpForm> {
             ),
           );
         } else if (user.isLandlord) {
-          // TODO: Navigate to LandlordDashboardScreen
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Welcome to UniBoard ${user.name}! 🎉'),
-              backgroundColor: widget.roleColor,
+          // ── Navigate to Landlord Dashboard ──
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => LandlordHomeScreen(
+                landlordName: user.name,
+              ),
             ),
           );
         }
@@ -533,7 +529,8 @@ class _SignUpFormState extends State<_SignUpForm> {
               icon: Icons.person_outline_rounded,
               roleColor: widget.roleColor,
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter your name';
+                if (value == null || value.isEmpty)
+                  return 'Please enter your name';
                 return null;
               },
             ),
@@ -547,8 +544,10 @@ class _SignUpFormState extends State<_SignUpForm> {
               roleColor: widget.roleColor,
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter your email';
-                if (!value.contains('@')) return 'Please enter a valid email';
+                if (value == null || value.isEmpty)
+                  return 'Please enter your email';
+                if (!value.contains('@'))
+                  return 'Please enter a valid email';
                 return null;
               },
             ),
@@ -562,7 +561,8 @@ class _SignUpFormState extends State<_SignUpForm> {
               roleColor: widget.roleColor,
               keyboardType: TextInputType.phone,
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter your phone number';
+                if (value == null || value.isEmpty)
+                  return 'Please enter your phone number';
                 return null;
               },
             ),
@@ -589,12 +589,14 @@ class _SignUpFormState extends State<_SignUpForm> {
                   color: Colors.grey.shade400,
                   size: 20,
                 ),
-                onPressed: () =>
-                    setState(() => _passwordVisible = !_passwordVisible),
+                onPressed: () => setState(
+                    () => _passwordVisible = !_passwordVisible),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please enter a password';
-                if (value.length < 6) return 'Password must be at least 6 characters';
+                if (value == null || value.isEmpty)
+                  return 'Please enter a password';
+                if (value.length < 6)
+                  return 'Password must be at least 6 characters';
                 return null;
               },
             ),
@@ -615,12 +617,15 @@ class _SignUpFormState extends State<_SignUpForm> {
                   color: Colors.grey.shade400,
                   size: 20,
                 ),
-                onPressed: () => setState(
-                    () => _confirmPasswordVisible = !_confirmPasswordVisible),
+                onPressed: () => setState(() =>
+                    _confirmPasswordVisible =
+                        !_confirmPasswordVisible),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty) return 'Please confirm your password';
-                if (value != _passwordController.text) return 'Passwords do not match';
+                if (value == null || value.isEmpty)
+                  return 'Please confirm your password';
+                if (value != _passwordController.text)
+                  return 'Passwords do not match';
                 return null;
               },
             ),
@@ -653,34 +658,24 @@ class _SignUpFormState extends State<_SignUpForm> {
               Icon(Icons.school_outlined,
                   color: Colors.grey.shade400, size: 20),
               const SizedBox(width: 12),
-              Text(
-                'Enter your University',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: Colors.grey.shade400,
-                ),
-              ),
+              Text('Enter your University',
+                  style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      color: Colors.grey.shade400)),
             ],
           ),
           isExpanded: true,
-          icon: Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: Colors.grey.shade400,
-          ),
+          icon: Icon(Icons.keyboard_arrow_down_rounded,
+              color: Colors.grey.shade400),
           style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: const Color(0xFF1A1A2E),
-          ),
-          onChanged: (String? value) {
-            setState(() => _selectedUniversity = value);
-          },
+              fontSize: 14, color: const Color(0xFF1A1A2E)),
+          onChanged: (String? value) =>
+              setState(() => _selectedUniversity = value),
           items: _universities.map((String university) {
             return DropdownMenuItem<String>(
               value: university,
-              child: Text(
-                university,
-                style: GoogleFonts.poppins(fontSize: 13),
-              ),
+              child: Text(university,
+                  style: GoogleFonts.poppins(fontSize: 13)),
             );
           }).toList(),
         ),
@@ -692,7 +687,6 @@ class _SignUpFormState extends State<_SignUpForm> {
 // ─────────────────────────────────────────────
 // SHARED HELPER WIDGETS
 // ─────────────────────────────────────────────
-
 Widget _buildLabel(String text) {
   return Text(
     text,
@@ -720,16 +714,13 @@ Widget _buildTextField({
     keyboardType: keyboardType,
     validator: validator,
     style: GoogleFonts.poppins(
-      fontSize: 14,
-      color: const Color(0xFF1A1A2E),
-    ),
+        fontSize: 14, color: const Color(0xFF1A1A2E)),
     decoration: InputDecoration(
       hintText: hint,
       hintStyle: GoogleFonts.poppins(
-        fontSize: 14,
-        color: Colors.grey.shade400,
-      ),
-      prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 20),
+          fontSize: 14, color: Colors.grey.shade400),
+      prefixIcon:
+          Icon(icon, color: Colors.grey.shade400, size: 20),
       suffixIcon: suffixIcon,
       filled: true,
       fillColor: const Color(0xFFF2F2F2),
@@ -743,14 +734,16 @@ Widget _buildTextField({
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Colors.red, width: 1.5),
+        borderSide:
+            const BorderSide(color: Colors.red, width: 1.5),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Colors.red, width: 2),
+        borderSide:
+            const BorderSide(color: Colors.red, width: 2),
       ),
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16, vertical: 16),
     ),
   );
 }
@@ -783,9 +776,7 @@ Widget _buildButton({
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                ),
+                    color: Colors.white, strokeWidth: 2.5),
               )
             : Text(
                 label,
