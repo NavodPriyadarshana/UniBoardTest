@@ -4,11 +4,6 @@ import '../../services/auth_service.dart';
 import '../../models/user_model.dart';
 import '../auth/role_selection_screen.dart';
 
-// ─────────────────────────────────────────────
-// STUDENT PROFILE SCREEN
-// Shows student info and sign out button.
-// Navigated to from bottom nav Profile tab.
-// ─────────────────────────────────────────────
 class StudentProfileScreen extends StatefulWidget {
   final String studentName;
   final String university;
@@ -37,9 +32,6 @@ class _StudentProfileScreenState
     _loadUserData();
   }
 
-  // ─────────────────────────────────────────────
-  // LOAD USER DATA FROM FIRESTORE
-  // ─────────────────────────────────────────────
   Future<void> _loadUserData() async {
     try {
       final currentUser = _authService.currentUser;
@@ -55,37 +47,25 @@ class _StudentProfileScreenState
     }
   }
 
-  // ─────────────────────────────────────────────
-  // SIGN OUT
-  // Logs out user and navigates to role selection
-  // ─────────────────────────────────────────────
   Future<void> _signOut() async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Sign Out',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF1A1A2E),
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to sign out?',
-          style: GoogleFonts.poppins(fontSize: 14),
-        ),
+            borderRadius: BorderRadius.circular(20)),
+        title: Text('Sign Out',
+            style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF1A1A2E))),
+        content: Text('Are you sure you want to sign out?',
+            style: GoogleFonts.poppins(fontSize: 14)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.poppins(
-                color: const Color(0xFF2B658B),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: Text('Cancel',
+                style: GoogleFonts.poppins(
+                    color: const Color(0xFF2B658B),
+                    fontWeight: FontWeight.w600)),
           ),
           TextButton(
             onPressed: () async {
@@ -95,20 +75,15 @@ class _StudentProfileScreenState
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(
-                    builder: (_) =>
-                        const RoleSelectionScreen(),
-                  ),
+                      builder: (_) => const RoleSelectionScreen()),
                   (route) => false,
                 );
               }
             },
-            child: Text(
-              'Sign Out',
-              style: GoogleFonts.poppins(
-                color: Colors.red,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: Text('Sign Out',
+                style: GoogleFonts.poppins(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -125,19 +100,14 @@ class _StudentProfileScreenState
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF1F9EE),
-              Color(0xFFF1F3FA),
-            ],
+            colors: [Color(0xFFF1F9EE), Color(0xFFF1F3FA)],
           ),
         ),
         child: SafeArea(
           child: _isLoading
               ? const Center(
                   child: CircularProgressIndicator(
-                    color: Color(0xFF2B658B),
-                  ),
-                )
+                      color: Color(0xFF2B658B)))
               : SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   child: Column(
@@ -157,30 +127,57 @@ class _StudentProfileScreenState
     );
   }
 
-  // ── Header ──
+  // ── Header with back button ──
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: 24, vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Back button and Edit icon on same row ──
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color: const Color(0xFFDDE3F0)),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_rounded,
+                    color: Color(0xFF2B658B),
+                    size: 18,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  // TODO: Navigate to edit profile screen
+                },
+                child: const Icon(
+                  Icons.edit_outlined,
+                  color: Color(0xFF2B658B),
+                  size: 24,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // ── Title below back button ──
           Text(
             'My Profile',
             style: GoogleFonts.poppins(
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: FontWeight.w700,
               color: const Color(0xFF1A1A2E),
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              // TODO: Navigate to edit profile screen
-            },
-            child: const Icon(
-              Icons.edit_outlined,
-              color: Color(0xFF2B658B),
-              size: 24,
             ),
           ),
         ],
@@ -197,17 +194,13 @@ class _StudentProfileScreenState
 
     return Column(
       children: [
-        // Avatar circle
         Container(
           width: 88,
           height: 88,
           decoration: BoxDecoration(
             color: const Color(0xFF2B658B),
             shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white,
-              width: 3,
-            ),
+            border: Border.all(color: Colors.white, width: 3),
           ),
           child: Center(
             child: Text(
@@ -220,10 +213,7 @@ class _StudentProfileScreenState
             ),
           ),
         ),
-
         const SizedBox(height: 12),
-
-        // Name
         Text(
           name,
           style: GoogleFonts.poppins(
@@ -232,10 +222,7 @@ class _StudentProfileScreenState
             color: const Color(0xFF1A1A2E),
           ),
         ),
-
         const SizedBox(height: 4),
-
-        // Role
         Text(
           'Student',
           style: GoogleFonts.poppins(
@@ -243,10 +230,7 @@ class _StudentProfileScreenState
             color: const Color(0xFF5C6B8A),
           ),
         ),
-
         const SizedBox(height: 10),
-
-        // Verified badge
         Container(
           padding: const EdgeInsets.symmetric(
               horizontal: 14, vertical: 5),
@@ -271,34 +255,21 @@ class _StudentProfileScreenState
   Widget _buildInfoCards() {
     final email = _user?.email ?? '';
     final phone = _user?.phone ?? '';
-    final university = _user?.university ??
-        widget.university;
+    final university = _user?.university ?? widget.university;
     final createdAt = _user?.createdAt;
     final memberSince = createdAt != null
         ? '${_getMonth(createdAt.month)} ${createdAt.year}'
         : '';
 
     final items = [
-      {
-        'label': 'Email Address',
-        'value': email,
-        'icon': Icons.email_outlined,
-      },
-      {
-        'label': 'Phone Number',
-        'value': phone,
-        'icon': Icons.phone_outlined,
-      },
-      {
-        'label': 'University',
-        'value': university,
-        'icon': Icons.school_outlined,
-      },
-      {
-        'label': 'Member Since',
-        'value': memberSince,
-        'icon': Icons.calendar_today_outlined,
-      },
+      {'label': 'Email Address', 'value': email,
+       'icon': Icons.email_outlined},
+      {'label': 'Phone Number', 'value': phone,
+       'icon': Icons.phone_outlined},
+      {'label': 'University', 'value': university,
+       'icon': Icons.school_outlined},
+      {'label': 'Member Since', 'value': memberSince,
+       'icon': Icons.calendar_today_outlined},
     ];
 
     return Padding(
@@ -312,8 +283,7 @@ class _StudentProfileScreenState
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                  color: const Color(0xFFDDE3F0)),
+              border: Border.all(color: const Color(0xFFDDE3F0)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,18 +291,13 @@ class _StudentProfileScreenState
                 Text(
                   item['label'] as String,
                   style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    color: Colors.grey.shade500,
-                  ),
+                      fontSize: 11, color: Colors.grey.shade500),
                 ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    Icon(
-                      item['icon'] as IconData,
-                      size: 18,
-                      color: const Color(0xFF2B658B),
-                    ),
+                    Icon(item['icon'] as IconData,
+                        size: 18, color: const Color(0xFF2B658B)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -366,18 +331,13 @@ class _StudentProfileScreenState
           decoration: BoxDecoration(
             color: const Color(0xFFFFF0F0),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: const Color(0xFFFFCCCC),
-            ),
+            border: Border.all(color: const Color(0xFFFFCCCC)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.logout_rounded,
-                size: 20,
-                color: Color(0xFFE53935),
-              ),
+              const Icon(Icons.logout_rounded,
+                  size: 20, color: Color(0xFFE53935)),
               const SizedBox(width: 8),
               Text(
                 'Sign Out',
@@ -394,12 +354,10 @@ class _StudentProfileScreenState
     );
   }
 
-  // ── Month name helper ──
   String _getMonth(int month) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr',
-      'May', 'Jun', 'Jul', 'Aug',
-      'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
     return months[month - 1];
   }
