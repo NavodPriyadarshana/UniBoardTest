@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../screens/student/listing_detail_screen.dart';
 
 // ─────────────────────────────────────────────
@@ -18,6 +20,60 @@ class ListingCard extends StatefulWidget {
 
 class _ListingCardState extends State<ListingCard> {
   bool _isPressed = false;
+  bool _isSaved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfSaved();
+  }
+
+  // Check if listing is already saved
+  Future<void> _checkIfSaved() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      final savedIds = List<String>.from(
+          doc.data()?['savedListings'] ?? []);
+      if (mounted) {
+        setState(() => _isSaved = savedIds.contains(
+            widget.listing['listingId'] ?? ''));
+      }
+    } catch (e) {
+      print('❌ Error checking saved: $e');
+    }
+  }
+
+  // Toggle save/unsave listing
+  Future<void> _toggleSave() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      final listingId = widget.listing['listingId'] ?? '';
+      final userRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid);
+
+      if (_isSaved) {
+        await userRef.update({
+          'savedListings':
+              FieldValue.arrayRemove([listingId]),
+        });
+      } else {
+        await userRef.update({
+          'savedListings':
+              FieldValue.arrayUnion([listingId]),
+        });
+      }
+      if (mounted) setState(() => _isSaved = !_isSaved);
+    } catch (e) {
+      print('❌ Error toggling save: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,16 +171,23 @@ class _ListingCardState extends State<ListingCard> {
             // Save button
             Positioned(
               bottom: 12, right: 12,
-              child: Container(
-                width: 34, height: 34,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.favorite_border_rounded,
-                  size: 18,
-                  color: Color(0xFF2B658B),
+              child: GestureDetector(
+                onTap: _toggleSave,
+                child: Container(
+                  width: 34, height: 34,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    _isSaved
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    size: 18,
+                    color: _isSaved
+                        ? Colors.red
+                        : const Color(0xFF2B658B),
+                  ),
                 ),
               ),
             ),
