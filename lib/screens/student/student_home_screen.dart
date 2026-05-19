@@ -8,6 +8,7 @@ import '../../widgets/student/listing_card.dart';
 import '../../widgets/student/bottom_nav_bar.dart';
 import 'student_profile_screen.dart';
 import 'search_screen.dart';
+import 'my_bookings_screen.dart';
 
 // ─────────────────────────────────────────────
 // STUDENT HOME SCREEN
@@ -173,6 +174,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const SearchScreen(),
+                      ),
+                    );
+                  } else if (index == 2) {
+                    // Navigate to my bookings screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MyBookingsScreen(),
                       ),
                     );
                   } else if (index == 4) {
