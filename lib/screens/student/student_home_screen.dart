@@ -9,6 +9,7 @@ import '../../widgets/student/bottom_nav_bar.dart';
 import 'student_profile_screen.dart';
 import 'search_screen.dart';
 import 'my_bookings_screen.dart';
+import 'saved_listings_screen.dart';
 
 // ─────────────────────────────────────────────
 // STUDENT HOME SCREEN
@@ -182,6 +183,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const MyBookingsScreen(),
+                      ),
+                    );
+                  } else if (index == 3) {
+                    // Navigate to saved listings screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SavedListingsScreen(),
                       ),
                     );
                   } else if (index == 4) {
