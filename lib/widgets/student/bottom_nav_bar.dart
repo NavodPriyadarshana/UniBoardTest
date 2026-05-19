@@ -20,7 +20,7 @@ class BottomNavBar extends StatelessWidget {
     {'icon': Icons.home_rounded,              'label': 'Home'},
     {'icon': Icons.search_rounded,            'label': 'Search'},
     {'icon': Icons.calendar_today_rounded,    'label': 'Bookings'},
-    {'icon': Icons.chat_bubble_outline_rounded,'label': 'Chat'},
+    {'icon': Icons.favorite_border_rounded,   'label': 'Saved'},
     {'icon': Icons.person_outline_rounded,    'label': 'Profile'},
   ];
 
