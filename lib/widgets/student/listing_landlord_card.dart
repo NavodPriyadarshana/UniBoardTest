@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/auth_service.dart';
+import '../../services/chat_service.dart';
+import '../../screens/chat/chat_screen.dart';
 
 // ─────────────────────────────────────────────
 // LISTING LANDLORD CARD WIDGET
@@ -12,7 +15,8 @@ class ListingLandlordCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String landlordName = listing['landlordName'] ?? 'Kamal Silva';
+    final String landlordName =
+        listing['landlordName'] ?? 'Landlord';
     final String initial = landlordName.isNotEmpty
         ? landlordName[0].toUpperCase()
         : 'L';
@@ -34,7 +38,8 @@ class ListingLandlordCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFDDE3F0)),
+            border: Border.all(
+                color: const Color(0xFFDDE3F0)),
           ),
           child: Row(
             children: [
@@ -56,7 +61,8 @@ class ListingLandlordCard extends StatelessWidget {
               // Name and verified label
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
                   children: [
                     Text(
                       landlordName,
@@ -79,8 +85,44 @@ class ListingLandlordCard extends StatelessWidget {
 
               // Chat button
               GestureDetector(
-                onTap: () {
-                  // TODO: Navigate to chat screen
+                onTap: () async {
+                  final authService = AuthService();
+                  final chatService = ChatService();
+                  final currentUser =
+                      authService.currentUser;
+                  if (currentUser == null) return;
+
+                  try {
+                    final chatId =
+                        await chatService.getOrCreateChat(
+                      studentId: currentUser.uid,
+                      landlordId:
+                          listing['landlordId'] ?? '',
+                      listingId:
+                          listing['listingId'] ?? '',
+                      listingTitle:
+                          listing['title'] ?? '',
+                    );
+
+                    if (context.mounted) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ChatScreen(
+                            chatId: chatId,
+                            receiverId:
+                                listing['landlordId'] ??
+                                    '',
+                            receiverName: landlordName,
+                            listingTitle:
+                                listing['title'] ?? '',
+                          ),
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    print('❌ Chat error: $e');
+                  }
                 },
                 child: Container(
                   width: 38,
@@ -96,27 +138,7 @@ class ListingLandlordCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
 
-              // Call button
-              GestureDetector(
-                onTap: () {
-                  // TODO: Launch phone call
-                },
-                child: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE3EDF4),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.phone_outlined,
-                    size: 18,
-                    color: Color(0xFF2B658B),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
