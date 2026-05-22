@@ -13,6 +13,7 @@ class ChatScreen extends StatefulWidget {
   final String receiverId;
   final String receiverName;
   final String listingTitle;
+  final bool isLandlord;
 
   const ChatScreen({
     super.key,
@@ -20,6 +21,7 @@ class ChatScreen extends StatefulWidget {
     required this.receiverId,
     required this.receiverName,
     required this.listingTitle,
+    this.isLandlord = false,
   });
 
   @override
@@ -136,8 +138,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      decoration: const BoxDecoration(
-        color: Color(0xFF2B658B),
+      decoration: BoxDecoration(
+        color: widget.isLandlord
+            ? const Color(0xFFF09418)
+            : const Color(0xFF2B658B),
       ),
       child: Row(
         children: [
@@ -357,7 +361,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: isMe
-                        ? const Color(0xFF2B658B)
+                        ? (widget.isLandlord
+                            ? const Color(0xFFF09418)
+                            : const Color(0xFF2B658B))
                         : Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(14),
@@ -398,7 +404,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       const SizedBox(width: 4),
                       Icon(Icons.done_all_rounded,
                           size: 14,
-                          color: const Color(0xFF2B658B)),
+                          color: widget.isLandlord
+                              ? const Color(0xFFF09418)
+                              : const Color(0xFF2B658B)),
                     ],
                   ],
                 ),
@@ -454,7 +462,9 @@ class _ChatScreenState extends State<ChatScreen> {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: const Color(0xFF2B658B),
+                color: widget.isLandlord
+                    ? const Color(0xFFF09418)
+                    : const Color(0xFF2B658B),
                 borderRadius: BorderRadius.circular(50),
               ),
               child: const Icon(Icons.send_rounded,
