@@ -8,6 +8,7 @@ import 'add_listing_screen.dart';
 import 'my_listings_screen.dart';
 import 'landlord_bookings_screen.dart';
 import 'landlord_profile_screen.dart';
+import 'landlord_chat_list_screen.dart';
 
 // ─────────────────────────────────────────────
 // LANDLORD HOME SCREEN
@@ -665,6 +666,14 @@ class _LandlordHomeScreenState
                   MaterialPageRoute(
                       builder: (_) =>
                           const LandlordBookingsScreen()),
+                );
+              } else if (index == 3) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        const LandlordChatListScreen(),
+                  ),
                 );
               } else if (index == 4) {
                 Navigator.push(
