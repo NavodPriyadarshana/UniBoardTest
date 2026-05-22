@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
 import '../../models/user_model.dart';
 import '../auth/role_selection_screen.dart';
+import 'edit_profile_screen.dart';
 
 class StudentProfileScreen extends StatefulWidget {
   final String studentName;
@@ -157,8 +158,18 @@ class _StudentProfileScreenState
                 ),
               ),
               GestureDetector(
-                onTap: () {
-                  // TODO: Navigate to edit profile screen
+                onTap: () async {
+                  final updated = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EditProfileScreen(
+                        currentName: _user?.name ?? widget.studentName,
+                        currentPhone: _user?.phone ?? '',
+                        currentUniversity: _user?.university ?? widget.university,
+                      ),
+                    ),
+                  );
+                  if (updated == true) _loadUserData();
                 },
                 child: const Icon(
                   Icons.edit_outlined,
