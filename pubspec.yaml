@@ -24,6 +24,7 @@ dependencies:
   # Image
   image_picker: ^1.1.2
   cached_network_image: ^3.4.1
+  file_picker: ^8.1.2
 
   # UI
   google_fonts: ^6.2.1
