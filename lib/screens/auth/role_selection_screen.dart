@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import 'auth_screen.dart';
+import '../landlord/landlord_pre_registration_screen.dart';
 
 class RoleSelectionScreen extends StatefulWidget {
   const RoleSelectionScreen({super.key});
 
   @override
-  State<RoleSelectionScreen> createState() => _RoleSelectionScreenState();
+  State<RoleSelectionScreen> createState() =>
+      _RoleSelectionScreenState();
 }
 
 class _RoleSelectionScreenState extends State<RoleSelectionScreen>
@@ -39,7 +41,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
       begin: const Offset(0, 0.3),
       end: Offset.zero,
     ).animate(
-      CurvedAnimation(parent: _slideController, curve: Curves.easeOut),
+      CurvedAnimation(
+          parent: _slideController, curve: Curves.easeOut),
     );
 
     _fadeController.forward();
@@ -59,7 +62,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        // ── Same gradient as splash screen ──
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -75,13 +77,13 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
           child: FadeTransition(
             opacity: _fadeAnim,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 100),
 
-                  // ── "Welcome to" ──
                   Text(
                     'Welcome to',
                     style: GoogleFonts.poppins(
@@ -92,7 +94,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                     ),
                   ),
 
-                  // ── "UniBoard 👋" with split colors ──
                   RichText(
                     text: TextSpan(
                       children: [
@@ -128,7 +129,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
 
                   const SizedBox(height: 12),
 
-                  // ── Subtitle ──
                   Text(
                     "Sri Lanka's #1 student boarding\nfinder platform",
                     style: GoogleFonts.poppins(
@@ -141,42 +141,44 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
 
                   const SizedBox(height: 150),
 
-                  // ── "I am a..." label ──
                   Text(
                     'I am a...',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF2B658B).withOpacity(0.7),
+                      color: const Color(0xFF2B658B)
+                          .withOpacity(0.7),
                     ),
                   ),
 
                   const SizedBox(height: 16),
 
-                  // ── Role cards ──
                   SlideTransition(
                     position: _slideAnim,
                     child: Column(
                       children: [
-
-                        // Student card — blue
+                        // Student card — goes to auth
                         _RoleCard(
                           icon: Icons.school_rounded,
                           title: 'Student',
-                          subtitle: 'Find & book boarding near\nyour university',
+                          subtitle:
+                              'Find & book boarding near\nyour university',
                           cardColor: const Color(0xFF2B658B),
-                          onTap: () => _navigateToAuth(context, 'student'),
+                          onTap: () =>
+                              _navigateToAuth(context, 'student'),
                         ),
 
                         const SizedBox(height: 16),
 
-                        // Landlord card — orange
+                        // Landlord card — goes to document submission
                         _RoleCard(
                           icon: Icons.house_rounded,
                           title: 'Landlord',
-                          subtitle: 'List your property and manage\nbookings',
+                          subtitle:
+                              'List your property and manage\nbookings',
                           cardColor: const Color(0xFFF09418),
-                          onTap: () => _navigateToAuth(context, 'landlord'),
+                          onTap: () =>
+                              _navigateToDocumentSubmission(context),
                         ),
                       ],
                     ),
@@ -184,7 +186,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
 
                   const Spacer(),
 
-                  // ── Sri Lanka badge ──
                   Center(
                     child: Container(
                       margin: const EdgeInsets.only(bottom: 24),
@@ -192,14 +193,16 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                           horizontal: 20, vertical: 10),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.75),
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius:
+                            BorderRadius.circular(30),
                         border: Border.all(
                           color: const Color(0xFFDDE3F0),
                           width: 1,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color:
+                                Colors.black.withOpacity(0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -225,14 +228,34 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
     );
   }
 
+  // ── Student → Auth Screen ──
   void _navigateToAuth(BuildContext context, String role) {
     Navigator.push(
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             AuthScreen(role: role),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
+        transitionsBuilder:
+            (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+              opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
+  }
+
+  // ── Landlord → Pre Registration Screen ──
+  void _navigateToDocumentSubmission(BuildContext context) {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const LandlordPreRegistrationScreen(),
+        transitionsBuilder:
+            (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+              opacity: animation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 400),
       ),
@@ -242,7 +265,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
 
 // ─────────────────────────────────────────────
 // ROLE CARD WIDGET
-// Solid colored card with icon, title, subtitle
 // ─────────────────────────────────────────────
 class _RoleCard extends StatefulWidget {
   final IconData icon;
@@ -275,9 +297,11 @@ class _RoleCardState extends State<_RoleCard> {
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        transform: Matrix4.identity()..scale(_isPressed ? 0.97 : 1.0),
+        transform: Matrix4.identity()
+          ..scale(_isPressed ? 0.97 : 1.0),
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+        padding: const EdgeInsets.symmetric(
+            horizontal: 20, vertical: 22),
         decoration: BoxDecoration(
           color: _isPressed
               ? widget.cardColor.withOpacity(0.85)
@@ -293,8 +317,6 @@ class _RoleCardState extends State<_RoleCard> {
         ),
         child: Row(
           children: [
-
-            // ── Icon container ──
             Container(
               width: 56,
               height: 56,
@@ -302,16 +324,10 @@ class _RoleCardState extends State<_RoleCard> {
                 color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(
-                widget.icon,
-                color: Colors.white,
-                size: 30,
-              ),
+              child: Icon(widget.icon,
+                  color: Colors.white, size: 30),
             ),
-
             const SizedBox(width: 18),
-
-            // ── Title & subtitle ──
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
