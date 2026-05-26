@@ -21,7 +21,10 @@ class _AuthScreenState extends State<AuthScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: widget.role == 'landlord' ? 1 : 2,
+      vsync: this,
+    );
   }
 
   @override
@@ -105,16 +108,23 @@ class _AuthScreenState extends State<AuthScreen>
                       Expanded(
                         child: TabBarView(
                           controller: _tabController,
-                          children: [
-                            _SignInForm(
-                              role: widget.role,
-                              roleColor: _roleColor,
-                            ),
-                            _SignUpForm(
-                              role: widget.role,
-                              roleColor: _roleColor,
-                            ),
-                          ],
+                          children: widget.role == 'landlord'
+                              ? [
+                                  _SignInForm(
+                                    role: widget.role,
+                                    roleColor: _roleColor,
+                                  ),
+                                ]
+                              : [
+                                  _SignInForm(
+                                    role: widget.role,
+                                    roleColor: _roleColor,
+                                  ),
+                                  _SignUpForm(
+                                    role: widget.role,
+                                    roleColor: _roleColor,
+                                  ),
+                                ],
                         ),
                       ),
                     ],
@@ -129,31 +139,43 @@ class _AuthScreenState extends State<AuthScreen>
   }
 
   Widget _buildTabBar() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: TabBar(
-        controller: _tabController,
-        indicator: BoxDecoration(
-          color: _roleColor,
-          borderRadius: BorderRadius.circular(10),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 48),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.grey.shade200),
         ),
-        indicatorSize: TabBarIndicatorSize.tab,
-        dividerColor: Colors.transparent,
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.grey.shade500,
-        labelStyle: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600, fontSize: 14),
-        unselectedLabelStyle: GoogleFonts.poppins(
-            fontWeight: FontWeight.w500, fontSize: 14),
-        tabs: const [
-          Tab(text: 'Sign In'),
-          Tab(text: 'Sign Up'),
-        ],
+        child: TabBar(
+          controller: _tabController,
+          indicator: BoxDecoration(
+            color: _roleColor,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: _roleColor.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          indicatorSize: TabBarIndicatorSize.tab,
+          dividerColor: Colors.transparent,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.grey.shade500,
+          labelStyle: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600, fontSize: 14),
+          unselectedLabelStyle: GoogleFonts.poppins(
+              fontWeight: FontWeight.w500, fontSize: 14),
+          tabs: widget.role == 'landlord'
+              ? [const Tab(text: 'Sign In')]
+              : [
+                  const Tab(text: 'Sign In'),
+                  const Tab(text: 'Sign Up'),
+                ],
+        ),
       ),
     );
   }
@@ -723,7 +745,7 @@ Widget _buildTextField({
           Icon(icon, color: Colors.grey.shade400, size: 20),
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: const Color(0xFFF2F2F2),
+      fillColor: const Color(0xFFF8F9FA),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
