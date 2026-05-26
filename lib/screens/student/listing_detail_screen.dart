@@ -6,6 +6,7 @@ import '../../widgets/student/listing_amenities.dart';
 import '../../widgets/student/listing_house_rules.dart';
 import '../../widgets/student/listing_landlord_card.dart';
 import '../../widgets/student/listing_book_button.dart';
+import '../../widgets/student/listing_reviews_widget.dart';
 
 // ─────────────────────────────────────────────
 // LISTING DETAIL SCREEN
@@ -33,53 +34,60 @@ class ListingDetailScreen extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // ── Scrollable content ──
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Image area with back and save buttons
                     ListingImageArea(listing: listing),
 
                     Padding(
                       padding: const EdgeInsets.all(20),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
                         children: [
-                          // Title, verified badge, location
                           ListingInfoSection(listing: listing),
                           const SizedBox(height: 16),
 
-                          // Stat cards — price, slots, type, gender
                           _buildStatCards(),
                           const SizedBox(height: 16),
 
-                          // Amenities
                           ListingAmenities(
                             amenities: List<String>.from(
-                              listing['amenities'] ?? ['WiFi', 'AC', 'Cooking'],
+                              listing['amenities'] ??
+                                  ['WiFi', 'AC', 'Cooking'],
                             ),
                           ),
                           const SizedBox(height: 16),
 
-                          // House rules
                           ListingHouseRules(
                             rules: listing['houseRules'] ??
-                                'Gate closes at 9:00 PM. No visitors after 8:00 PM. Quiet hours after 10:00 PM.',
+                                'Gate closes at 9:00 PM.',
                           ),
                           const SizedBox(height: 16),
 
-                          // Landlord card
-                          ListingLandlordCard(listing: listing),
+                          ListingLandlordCard(
+                              listing: listing),
                           const SizedBox(height: 16),
 
-                          // Rating and reviews
-                          _buildRating(),
+                          // ── Reviews Section ──
+                          Text(
+                            'Reviews',
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1A1A2E),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ListingReviewsWidget(
+                            listingId:
+                                listing['listingId'] ?? '',
+                          ),
                           const SizedBox(height: 16),
 
-                          // Physical visit warning
                           _buildVisitWarning(),
                           const SizedBox(height: 16),
                         ],
@@ -90,7 +98,6 @@ class ListingDetailScreen extends StatelessWidget {
               ),
             ),
 
-            // ── Book button pinned at bottom ──
             ListingBookButton(listing: listing),
           ],
         ),
@@ -98,17 +105,18 @@ class ListingDetailScreen extends StatelessWidget {
     );
   }
 
-  // ── 4 stat cards: Price, Slots, Type, Gender ──
   Widget _buildStatCards() {
     final stats = [
       {
         'label': 'Monthly Rent',
-        'value': 'LKR ${_formatPrice(listing['price'] ?? 0)}',
+        'value':
+            'LKR ${_formatPrice(listing['price'] ?? 0)}',
         'color': const Color(0xFF2B658B),
       },
       {
         'label': 'Available Slots',
-        'value': '${listing['slotsLeft'] ?? 0} of ${listing['totalCapacity'] ?? 4}',
+        'value':
+            '${listing['slotsLeft'] ?? 0} of ${listing['totalCapacity'] ?? 4}',
         'color': const Color(0xFFF09418),
       },
       {
@@ -126,7 +134,8 @@ class ListingDetailScreen extends StatelessWidget {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate:
+          const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
@@ -136,11 +145,13 @@ class ListingDetailScreen extends StatelessWidget {
       itemBuilder: (context, index) {
         final stat = stats[index];
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(
+              horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFDDE3F0)),
+            border:
+                Border.all(color: const Color(0xFFDDE3F0)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,9 +160,8 @@ class ListingDetailScreen extends StatelessWidget {
               Text(
                 stat['label'] as String,
                 style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  color: Colors.grey.shade500,
-                ),
+                    fontSize: 11,
+                    color: Colors.grey.shade500),
               ),
               Text(
                 stat['value'] as String,
@@ -168,33 +178,6 @@ class ListingDetailScreen extends StatelessWidget {
     );
   }
 
-  // ── Star rating and reviews ──
-  Widget _buildRating() {
-    final double rating = (listing['rating'] ?? 4.5).toDouble();
-    return Row(
-      children: [
-        ...List.generate(5, (i) {
-          return Icon(
-            i < rating.floor()
-                ? Icons.star_rounded
-                : (i < rating ? Icons.star_half_rounded : Icons.star_outline_rounded),
-            size: 18,
-            color: const Color(0xFFF09418),
-          );
-        }),
-        const SizedBox(width: 6),
-        Text(
-          '$rating (12 reviews)',
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            color: const Color(0xFF5C6B8A),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ── Physical visit warning ──
   Widget _buildVisitWarning() {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -205,11 +188,8 @@ class ListingDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.info_outline_rounded,
-            size: 18,
-            color: Color(0xFFF09418),
-          ),
+          const Icon(Icons.info_outline_rounded,
+              size: 18, color: Color(0xFFF09418)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
