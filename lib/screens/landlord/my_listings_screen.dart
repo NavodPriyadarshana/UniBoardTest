@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/auth_service.dart';
 import 'add_listing_screen.dart';
+import 'edit_listing_screen.dart';
 
 // ─────────────────────────────────────────────
 // MY LISTINGS SCREEN
@@ -477,8 +478,16 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
                       children: [
                         // Edit button
                         GestureDetector(
-                          onTap: () {
-                            // TODO: Navigate to edit screen
+                          onTap: () async {
+                            final updated = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => EditListingScreen(
+                                  listing: listing,
+                                ),
+                              ),
+                            );
+                            if (updated == true) _fetchListings();
                           },
                           child: Container(
                             width: 34,
