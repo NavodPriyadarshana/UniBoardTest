@@ -218,6 +218,35 @@ class _SignInFormState extends State<_SignInForm> {
         password: _passwordController.text,
       );
       if (mounted && user != null) {
+        // ── Check role matches selected role ──
+        if (widget.role == 'landlord' && user.isStudent) {
+          await _authService.logout();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'This is a student account. Please use the student login.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
+        if (widget.role == 'student' && user.isLandlord) {
+          await _authService.logout();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'This is a landlord account. Please use the landlord login.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
         if (user.isStudent) {
           Navigator.pushReplacement(
             context,
@@ -486,6 +515,35 @@ class _SignUpFormState extends State<_SignUpForm> {
             : '',
       );
       if (mounted && user != null) {
+        // ── Check role matches selected role ──
+        if (widget.role == 'landlord' && user.isStudent) {
+          await _authService.logout();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'This is a student account. Please use the student login.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
+        if (widget.role == 'student' && user.isLandlord) {
+          await _authService.logout();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'This is a landlord account. Please use the landlord login.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
         if (user.isStudent) {
           Navigator.pushReplacement(
             context,
