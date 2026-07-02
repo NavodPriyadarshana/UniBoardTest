@@ -4,12 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'constants/app_colors.dart';
 import 'firebase_options.dart';
 import 'screens/auth/role_selection_screen.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await NotificationService().initialise();
   runApp(const UniboardApp());
 }
 
@@ -151,7 +153,6 @@ class _SplashScreenState extends State<SplashScreen>
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        // ── Light gradient: #F1F9EE (top) → #F1F3FA (bottom) ──
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -257,8 +258,6 @@ class _SplashScreenState extends State<SplashScreen>
 
 // ─────────────────────────────────────────────
 // LOADING DOTS WIDGET
-// 3 dots that pulse one after another,
-// shifting from grey to blue as they animate.
 // ─────────────────────────────────────────────
 class _LoadingDots extends StatefulWidget {
   const _LoadingDots();
@@ -290,7 +289,6 @@ class _LoadingDotsState extends State<_LoadingDots>
       );
     }).toList();
 
-    // Each dot starts with a 200ms delay after the previous
     for (int i = 0; i < 3; i++) {
       Future.delayed(Duration(milliseconds: i * 200), () {
         if (mounted) _controllers[i].repeat(reverse: true);
