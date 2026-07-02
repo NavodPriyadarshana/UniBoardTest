@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../services/auth_service.dart';
+import '../../services/notification_service.dart';
 
 // ─────────────────────────────────────────────
 // LANDLORD BOOKINGS SCREEN
@@ -25,10 +26,7 @@ class _LandlordBookingsScreenState
   int _selectedFilter = 0;
 
   final List<String> _filters = [
-    'All',
-    'Pending',
-    'Confirmed',
-    'Rejected',
+    'All', 'Pending', 'Confirmed', 'Rejected',
   ];
 
   @override
@@ -37,9 +35,6 @@ class _LandlordBookingsScreenState
     _fetchBookings();
   }
 
-  // ─────────────────────────────────────────────
-  // FETCH BOOKINGS FROM FIRESTORE
-  // ─────────────────────────────────────────────
   Future<void> _fetchBookings() async {
     setState(() => _isLoading = true);
     try {
@@ -65,21 +60,16 @@ class _LandlordBookingsScreenState
     }
   }
 
-  // ─────────────────────────────────────────────
-  // GET FILTERED BOOKINGS
-  // ─────────────────────────────────────────────
   List<Map<String, dynamic>> get _filteredBookings {
     if (_selectedFilter == 0) return _bookings;
-    final status =
-        _filters[_selectedFilter].toLowerCase();
-    return _bookings
-        .where((b) => b['status'] == status)
-        .toList();
+    final status = _filters[_selectedFilter].toLowerCase();
+    return _bookings.where((b) => b['status'] == status).toList();
   }
 
   // ─────────────────────────────────────────────
   // UPDATE BOOKING STATUS
   // Accept or reject a booking request
+  // Sends push notification to student
   // ─────────────────────────────────────────────
   Future<void> _updateBookingStatus(
       String bookingId, String status) async {
@@ -89,10 +79,13 @@ class _LandlordBookingsScreenState
           .doc(bookingId)
           .update({'status': status});
 
-      // If accepted update available slots
+      // ── Get booking data for notification ──
+      final booking = _bookings.firstWhere(
+          (b) => b['bookingId'] == bookingId);
+      final studentId = booking['studentId'] ?? '';
+
+      // ── If accepted update available slots ──
       if (status == 'confirmed') {
-        final booking = _bookings.firstWhere(
-            (b) => b['bookingId'] == bookingId);
         final listingId = booking['listingId'] ?? '';
         if (listingId.isNotEmpty) {
           final listingDoc = await FirebaseFirestore
@@ -109,20 +102,37 @@ class _LandlordBookingsScreenState
                   .doc(listingId)
                   .update({
                 'availableSlots': currentSlots - 1,
-                'currentOccupants':
-                    FieldValue.increment(1),
+                'currentOccupants': FieldValue.increment(1),
               });
             }
           }
         }
+
+        // ── Send notification to student ──
+        if (studentId.isNotEmpty) {
+          await NotificationService.sendNotificationToUser(
+            userId: studentId,
+            title: 'Booking Confirmed! 🎉',
+            body: 'Your booking request has been confirmed by the landlord.',
+          );
+        }
+      }
+
+      // ── Send rejection notification to student ──
+      if (status == 'rejected' && studentId.isNotEmpty) {
+        await NotificationService.sendNotificationToUser(
+          userId: studentId,
+          title: 'Booking Update',
+          body: 'Your booking request was not accepted this time. Please try another listing.',
+        );
       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(status == 'confirmed'
-                ? '✅ Booking accepted!'
-                : '❌ Booking rejected'),
+                ? '✅ Booking accepted! Student notified.'
+                : '❌ Booking rejected. Student notified.'),
             backgroundColor: status == 'confirmed'
                 ? const Color(0xFF3B6D11)
                 : Colors.red.shade400,
@@ -156,11 +166,9 @@ class _LandlordBookingsScreenState
                   onRefresh: _fetchBookings,
                   color: const Color(0xFFF09418),
                   child: SingleChildScrollView(
-                    physics:
-                        const AlwaysScrollableScrollPhysics(),
+                    physics: const AlwaysScrollableScrollPhysics(),
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildHeader(),
                         const SizedBox(height: 8),
@@ -168,13 +176,10 @@ class _LandlordBookingsScreenState
                         const SizedBox(height: 16),
                         _isLoading
                             ? const Padding(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 60),
+                                padding: EdgeInsets.symmetric(vertical: 60),
                                 child: Center(
-                                  child:
-                                      CircularProgressIndicator(
-                                          color: Color(
-                                              0xFFF09418)),
+                                  child: CircularProgressIndicator(
+                                      color: Color(0xFFF09418)),
                                 ),
                               )
                             : _filteredBookings.isEmpty
@@ -193,7 +198,6 @@ class _LandlordBookingsScreenState
     );
   }
 
-  // ── Header ──
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
@@ -203,44 +207,30 @@ class _LandlordBookingsScreenState
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
-              width: 40,
-              height: 40,
+              width: 40, height: 40,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: const Color(0xFFDDE3F0)),
+                border: Border.all(color: const Color(0xFFDDE3F0)),
               ),
-              child: const Icon(
-                Icons.arrow_back_ios_rounded,
-                color: Color(0xFFF09418),
-                size: 18,
-              ),
+              child: const Icon(Icons.arrow_back_ios_rounded,
+                  color: Color(0xFFF09418), size: 18),
             ),
           ),
           const SizedBox(height: 20),
-          Text(
-            'Booking Requests',
-            style: GoogleFonts.poppins(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF1A1A2E),
-            ),
-          ),
+          Text('Booking Requests',
+              style: GoogleFonts.poppins(
+                  fontSize: 22, fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A1A2E))),
           const SizedBox(height: 4),
-          Text(
-            'Manage student booking requests',
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              color: const Color(0xFF5C6B8A),
-            ),
-          ),
+          Text('Manage student booking requests',
+              style: GoogleFonts.poppins(
+                  fontSize: 13, color: const Color(0xFF5C6B8A))),
         ],
       ),
     );
   }
 
-  // ── Filter tabs ──
   Widget _buildFilterTabs() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -249,19 +239,14 @@ class _LandlordBookingsScreenState
           final bool isSelected = _selectedFilter == index;
           return Expanded(
             child: GestureDetector(
-              onTap: () =>
-                  setState(() => _selectedFilter = index),
+              onTap: () => setState(() => _selectedFilter = index),
               child: Container(
                 margin: EdgeInsets.only(
-                    right: index < _filters.length - 1
-                        ? 8
-                        : 0),
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8),
+                    right: index < _filters.length - 1 ? 8 : 0),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFFF09418)
-                      : Colors.white,
+                      ? const Color(0xFFF09418) : Colors.white,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: isSelected
@@ -270,18 +255,14 @@ class _LandlordBookingsScreenState
                   ),
                 ),
                 child: Center(
-                  child: Text(
-                    _filters[index],
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      color: isSelected
-                          ? Colors.white
-                          : const Color(0xFF5C6B8A),
-                    ),
-                  ),
+                  child: Text(_filters[index],
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: isSelected
+                            ? FontWeight.w600 : FontWeight.w400,
+                        color: isSelected
+                            ? Colors.white : const Color(0xFF5C6B8A),
+                      )),
                 ),
               ),
             ),
@@ -291,11 +272,9 @@ class _LandlordBookingsScreenState
     );
   }
 
-  // ── Empty state ──
   Widget _buildEmpty() {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-          vertical: 60, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
       child: Center(
         child: Column(
           children: [
@@ -307,25 +286,18 @@ class _LandlordBookingsScreenState
                   ? 'No booking requests yet'
                   : 'No ${_filters[_selectedFilter].toLowerCase()} requests',
               style: GoogleFonts.poppins(
-                fontSize: 15,
-                color: Colors.grey.shade400,
-              ),
+                  fontSize: 15, color: Colors.grey.shade400),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Pull down to refresh',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                color: Colors.grey.shade300,
-              ),
-            ),
+            Text('Pull down to refresh',
+                style: GoogleFonts.poppins(
+                    fontSize: 13, color: Colors.grey.shade300)),
           ],
         ),
       ),
     );
   }
 
-  // ── Bookings list ──
   Widget _buildBookingsList() {
     return ListView.builder(
       shrinkWrap: true,
@@ -338,7 +310,6 @@ class _LandlordBookingsScreenState
     );
   }
 
-  // ── Booking card ──
   Widget _buildBookingCard(Map<String, dynamic> booking) {
     final String bookingId = booking['bookingId'] ?? '';
     final String studentId = booking['studentId'] ?? '';
@@ -346,9 +317,8 @@ class _LandlordBookingsScreenState
     final String status = booking['status'] ?? 'pending';
     final double amount =
         (booking['amount'] as num? ?? 0).toDouble();
-    final String initial = studentId.isNotEmpty
-        ? studentId[0].toUpperCase()
-        : 'S';
+    final String initial =
+        studentId.isNotEmpty ? studentId[0].toUpperCase() : 'S';
 
     Color statusColor;
     Color statusBg;
@@ -381,15 +351,13 @@ class _LandlordBookingsScreenState
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 8, offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Student info and status
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -398,37 +366,28 @@ class _LandlordBookingsScreenState
                   CircleAvatar(
                     radius: 20,
                     backgroundColor: const Color(0xFF2B658B),
-                    child: Text(
-                      initial,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: Text(initial,
+                        style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white)),
                   ),
                   const SizedBox(width: 10),
                   Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Student Request',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1A1A2E),
-                        ),
-                      ),
+                      Text('Student Request',
+                          style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1A1A2E))),
                       Text(
                         studentId.length > 20
-                            ? studentId.substring(0, 20) +
-                                '...'
+                            ? '${studentId.substring(0, 20)}...'
                             : studentId,
                         style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          color: Colors.grey.shade400,
-                        ),
+                            fontSize: 11,
+                            color: Colors.grey.shade400),
                       ),
                     ],
                   ),
@@ -441,21 +400,17 @@ class _LandlordBookingsScreenState
                   color: statusBg,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  statusLabel,
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: statusColor,
-                  ),
-                ),
+                child: Text(statusLabel,
+                    style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: statusColor)),
               ),
             ],
           ),
 
           const SizedBox(height: 10),
 
-          // Listing info
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -466,28 +421,21 @@ class _LandlordBookingsScreenState
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    'Listing: $listingId',
+                  child: Text('Listing: $listingId',
+                      style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: const Color(0xFF5C6B8A)),
+                      overflow: TextOverflow.ellipsis),
+                ),
+                Text('LKR ${_formatPrice(amount.toInt())}',
                     style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: const Color(0xFF5C6B8A),
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  'LKR ${_formatPrice(amount.toInt())}',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFFF09418),
-                  ),
-                ),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFF09418))),
               ],
             ),
           ),
 
-          // Accept/Reject buttons for pending only
           if (status == 'pending') ...[
             const SizedBox(height: 10),
             Row(
@@ -501,20 +449,16 @@ class _LandlordBookingsScreenState
                           vertical: 10),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFCEBEB),
-                        borderRadius:
-                            BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                             color: const Color(0xFFF09595)),
                       ),
                       child: Center(
-                        child: Text(
-                          'Reject',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFFA32D2D),
-                          ),
-                        ),
+                        child: Text('Reject',
+                            style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFFA32D2D))),
                       ),
                     ),
                   ),
@@ -529,20 +473,16 @@ class _LandlordBookingsScreenState
                           vertical: 10),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEAF3DE),
-                        borderRadius:
-                            BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                             color: const Color(0xFF97C459)),
                       ),
                       child: Center(
-                        child: Text(
-                          'Accept',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF3B6D11),
-                          ),
-                        ),
+                        child: Text('Accept',
+                            style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF3B6D11))),
                       ),
                     ),
                   ),
