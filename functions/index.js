@@ -1,4 +1,4 @@
-const functions = require("firebase-functions");
+const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
@@ -8,10 +8,10 @@ admin.initializeApp();
 // Triggered when a new document is added
 // to the notifications collection in Firestore
 // ─────────────────────────────────────────────
-exports.sendPushNotification = functions.firestore
-  .document("notifications/{notificationId}")
-  .onCreate(async (snap, context) => {
-    const data = snap.data();
+exports.sendPushNotification = onDocumentCreated(
+  "notifications/{notificationId}",
+  async (event) => {
+    const data = event.data.data();
 
     const token = data.token;
     const title = data.title;
@@ -43,11 +43,12 @@ exports.sendPushNotification = functions.firestore
       console.log("Notification sent successfully:", response);
 
       // Mark notification as sent
-      await snap.ref.update({ isSent: true });
+      await event.data.ref.update({ isSent: true });
 
       return response;
     } catch (error) {
       console.error("Error sending notification:", error);
       return null;
     }
-  });
+  }
+);
