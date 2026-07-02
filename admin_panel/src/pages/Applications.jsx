@@ -4,6 +4,14 @@ import {
   collection, getDocs, doc,
   updateDoc, addDoc, serverTimestamp
 } from 'firebase/firestore';
+import emailjs from '@emailjs/browser';
+
+// ─────────────────────────────────────────────
+// EmailJS Configuration
+// ─────────────────────────────────────────────
+const EMAILJS_SERVICE_ID = 'service_nc0klt5';
+const EMAILJS_TEMPLATE_ID = 'template_sgh1w3s';
+const EMAILJS_PUBLIC_KEY = 'Xx2dS52oWok0Y3310';
 
 export default function Applications() {
   const [applications, setApplications] = useState([]);
@@ -13,6 +21,7 @@ export default function Applications() {
   const [sendingOtp, setSendingOtp] = useState({});
 
   useEffect(() => {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
     fetchApplications();
   }, []);
 
@@ -58,6 +67,9 @@ export default function Applications() {
     }
   };
 
+  // ─────────────────────────────────────────────
+  // SEND OTP — Saves to Firestore + Sends Email
+  // ─────────────────────────────────────────────
   const handleSendOtp = async (app) => {
     const otp = otpInput[app.id];
     if (!otp || otp.length !== 6) {
@@ -66,7 +78,7 @@ export default function Applications() {
     }
     setSendingOtp(prev => ({ ...prev, [app.id]: true }));
     try {
-      // Save OTP to Firestore
+      // Step 1: Save OTP to Firestore
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 24);
 
@@ -78,11 +90,25 @@ export default function Applications() {
         expiresAt: expiresAt,
       });
 
-      alert(`OTP ${otp} saved for ${app.landlordEmail}.\nPlease send this OTP to the landlord via email manually.`);
+      // Step 2: Send OTP email via EmailJS
+      const templateParams = {
+        landlord_name: app.landlordName,
+        passcode: otp,
+        to_email: app.landlordEmail,
+      };
+
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        EMAILJS_PUBLIC_KEY
+      );
+
+      alert(`OTP sent successfully to ${app.landlordEmail}!`);
       setOtpInput(prev => ({ ...prev, [app.id]: '' }));
     } catch (e) {
-      console.error(e);
-      alert('Failed to save OTP');
+      console.error('Error sending OTP:', e);
+      alert('Failed to send OTP. Please try again.');
     }
     setSendingOtp(prev => ({ ...prev, [app.id]: false }));
   };
@@ -225,14 +251,12 @@ export default function Applications() {
                   <button
                     onClick={() => handleReject(app)}
                     style={{
-                      flex: 1,
-                      padding: '10px',
+                      flex: 1, padding: '10px',
                       borderRadius: 10,
                       border: '1px solid #F09595',
                       background: '#FCEBEB',
                       color: '#A32D2D',
-                      fontSize: 13,
-                      fontWeight: 600,
+                      fontSize: 13, fontWeight: 600,
                       cursor: 'pointer',
                       fontFamily: 'Poppins, sans-serif',
                     }}
@@ -242,14 +266,12 @@ export default function Applications() {
                   <button
                     onClick={() => handleApprove(app)}
                     style={{
-                      flex: 1,
-                      padding: '10px',
+                      flex: 1, padding: '10px',
                       borderRadius: 10,
                       border: '1px solid #97C459',
                       background: '#EAF3DE',
                       color: '#27500A',
-                      fontSize: 13,
-                      fontWeight: 600,
+                      fontSize: 13, fontWeight: 600,
                       cursor: 'pointer',
                       fontFamily: 'Poppins, sans-serif',
                     }}
@@ -267,7 +289,10 @@ export default function Applications() {
                   borderRadius: 12,
                   padding: 14,
                 }}>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: '#1A1A2E', marginBottom: 10 }}>
+                  <p style={{
+                    fontSize: 13, fontWeight: 600,
+                    color: '#1A1A2E', marginBottom: 10
+                  }}>
                     Send OTP to Landlord
                   </p>
                   <div style={{ display: 'flex', gap: 8 }}>
@@ -277,16 +302,14 @@ export default function Applications() {
                       placeholder="Enter 6 digit OTP"
                       value={otpInput[app.id] || ''}
                       onChange={(e) => setOtpInput(prev => ({
-                        ...prev,
-                        [app.id]: e.target.value
+                        ...prev, [app.id]: e.target.value
                       }))}
                       style={{
                         flex: 1,
                         padding: '10px 12px',
                         borderRadius: 10,
                         border: '1px solid #DDE3F0',
-                        fontSize: 14,
-                        outline: 'none',
+                        fontSize: 14, outline: 'none',
                         letterSpacing: 4,
                         fontFamily: 'Poppins, sans-serif',
                       }}
@@ -298,19 +321,18 @@ export default function Applications() {
                         padding: '10px 20px',
                         borderRadius: 10,
                         border: 'none',
-                        background: '#F09418',
+                        background: sendingOtp[app.id] ? '#ccc' : '#F09418',
                         color: 'white',
-                        fontSize: 13,
-                        fontWeight: 600,
-                        cursor: 'pointer',
+                        fontSize: 13, fontWeight: 600,
+                        cursor: sendingOtp[app.id] ? 'not-allowed' : 'pointer',
                         fontFamily: 'Poppins, sans-serif',
                       }}
                     >
-                      {sendingOtp[app.id] ? 'Saving...' : 'Save OTP'}
+                      {sendingOtp[app.id] ? 'Sending...' : 'Send OTP'}
                     </button>
                   </div>
                   <p style={{ fontSize: 11, color: '#5C6B8A', marginTop: 8 }}>
-                    ⚠️ After saving, manually email this OTP to {app.landlordEmail}
+                    ✅ OTP will be automatically sent to {app.landlordEmail}
                   </p>
                 </div>
               )}
