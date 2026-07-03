@@ -83,6 +83,9 @@ class _LandlordBookingsScreenState
       final booking = _bookings.firstWhere(
           (b) => b['bookingId'] == bookingId);
       final studentId = booking['studentId'] ?? '';
+      print('🔔 BookingId: $bookingId');
+      print('🔔 StudentId: $studentId');
+      print('🔔 Status: $status');
 
       // ── If accepted update available slots ──
       if (status == 'confirmed') {
@@ -110,11 +113,15 @@ class _LandlordBookingsScreenState
 
         // ── Send notification to student ──
         if (studentId.isNotEmpty) {
+          print('🔔 Sending confirmed notification to: $studentId');
           await NotificationService.sendNotificationToUser(
             userId: studentId,
             title: 'Booking Confirmed! 🎉',
             body: 'Your booking request has been confirmed by the landlord.',
           );
+          print('🔔 Notification sent!');
+        } else {
+          print('❌ studentId is empty!');
         }
       }
 
