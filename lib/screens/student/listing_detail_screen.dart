@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../widgets/student/listing_image_area.dart';
 import '../../widgets/student/listing_info_section.dart';
 import '../../widgets/student/listing_amenities.dart';
@@ -13,13 +14,28 @@ import '../../widgets/student/listing_reviews_widget.dart';
 // Shows full details of a boarding listing.
 // Navigated to when student taps a listing card.
 // ─────────────────────────────────────────────
-class ListingDetailScreen extends StatelessWidget {
+class ListingDetailScreen extends StatefulWidget {
   final Map<String, dynamic> listing;
 
   const ListingDetailScreen({
     super.key,
     required this.listing,
   });
+
+  @override
+  State<ListingDetailScreen> createState() =>
+      _ListingDetailScreenState();
+}
+
+class _ListingDetailScreenState
+    extends State<ListingDetailScreen> {
+  GoogleMapController? _mapController;
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +56,7 @@ class ListingDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ListingImageArea(listing: listing),
+                    ListingImageArea(listing: widget.listing),
 
                     Padding(
                       padding: const EdgeInsets.all(20),
@@ -48,7 +64,8 @@ class ListingDetailScreen extends StatelessWidget {
                         crossAxisAlignment:
                             CrossAxisAlignment.start,
                         children: [
-                          ListingInfoSection(listing: listing),
+                          ListingInfoSection(
+                              listing: widget.listing),
                           const SizedBox(height: 16),
 
                           _buildStatCards(),
@@ -56,20 +73,24 @@ class ListingDetailScreen extends StatelessWidget {
 
                           ListingAmenities(
                             amenities: List<String>.from(
-                              listing['amenities'] ??
+                              widget.listing['amenities'] ??
                                   ['WiFi', 'AC', 'Cooking'],
                             ),
                           ),
                           const SizedBox(height: 16),
 
                           ListingHouseRules(
-                            rules: listing['houseRules'] ??
+                            rules: widget.listing['houseRules'] ??
                                 'Gate closes at 9:00 PM.',
                           ),
                           const SizedBox(height: 16),
 
                           ListingLandlordCard(
-                              listing: listing),
+                              listing: widget.listing),
+                          const SizedBox(height: 16),
+
+                          // ── Location Map Section ──
+                          _buildMapSection(),
                           const SizedBox(height: 16),
 
                           // ── Reviews Section ──
@@ -84,7 +105,7 @@ class ListingDetailScreen extends StatelessWidget {
                           const SizedBox(height: 12),
                           ListingReviewsWidget(
                             listingId:
-                                listing['listingId'] ?? '',
+                                widget.listing['listingId'] ?? '',
                           ),
                           const SizedBox(height: 16),
 
@@ -98,10 +119,81 @@ class ListingDetailScreen extends StatelessWidget {
               ),
             ),
 
-            ListingBookButton(listing: listing),
+            ListingBookButton(listing: widget.listing),
           ],
         ),
       ),
+    );
+  }
+
+  // ── Google Maps Section ──
+  Widget _buildMapSection() {
+    final double lat =
+        (widget.listing['latitude'] as num? ?? 6.9271)
+            .toDouble();
+    final double lng =
+        (widget.listing['longitude'] as num? ?? 79.8612)
+            .toDouble();
+
+    final LatLng position = LatLng(lat, lng);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Location',
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF1A1A2E),
+          ),
+        ),
+        const SizedBox(height: 12),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: SizedBox(
+            height: 200,
+            child: GoogleMap(
+              onMapCreated: (controller) {
+                _mapController = controller;
+              },
+              initialCameraPosition: CameraPosition(
+                target: position,
+                zoom: 15,
+              ),
+              markers: {
+                Marker(
+                  markerId: const MarkerId('listing'),
+                  position: position,
+                  infoWindow: InfoWindow(
+                    title: widget.listing['title'] ?? 'Boarding',
+                    snippet:
+                        widget.listing['location'] ?? '',
+                  ),
+                ),
+              },
+              zoomControlsEnabled: false,
+              mapToolbarEnabled: false,
+              myLocationButtonEnabled: false,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Icon(Icons.location_on_rounded,
+                size: 14, color: Color(0xFF2B658B)),
+            const SizedBox(width: 4),
+            Text(
+              widget.listing['location'] ?? '',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: const Color(0xFF5C6B8A),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -110,23 +202,23 @@ class ListingDetailScreen extends StatelessWidget {
       {
         'label': 'Monthly Rent',
         'value':
-            'LKR ${_formatPrice(listing['price'] ?? 0)}',
+            'LKR ${_formatPrice(widget.listing['price'] ?? 0)}',
         'color': const Color(0xFF2B658B),
       },
       {
         'label': 'Available Slots',
         'value':
-            '${listing['slotsLeft'] ?? 0} of ${listing['totalCapacity'] ?? 4}',
+            '${widget.listing['slotsLeft'] ?? 0} of ${widget.listing['totalCapacity'] ?? 4}',
         'color': const Color(0xFFF09418),
       },
       {
         'label': 'Room Type',
-        'value': listing['roomType'] ?? 'Single',
+        'value': widget.listing['roomType'] ?? 'Single',
         'color': const Color(0xFF1A1A2E),
       },
       {
         'label': 'Gender',
-        'value': listing['gender'] ?? 'Any',
+        'value': widget.listing['gender'] ?? 'Any',
         'color': const Color(0xFF1A1A2E),
       },
     ];
