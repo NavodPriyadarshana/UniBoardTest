@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart';
 
 // ─────────────────────────────────────────────
 // EDIT LISTING SCREEN
 // Landlord edits an existing listing.
 // Pre-filled with current listing data.
+// Includes map picker for exact location.
 // ─────────────────────────────────────────────
 class EditListingScreen extends StatefulWidget {
   final Map<String, dynamic> listing;
@@ -26,7 +29,6 @@ class _EditListingScreenState
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  // Controllers pre-filled with existing data
   late TextEditingController _descriptionController;
   late TextEditingController _locationController;
   late TextEditingController _cityController;
@@ -38,6 +40,11 @@ class _EditListingScreenState
   String? _selectedRoomType;
   String? _selectedGender;
   List<String> _amenities = [];
+
+  // ── Location coordinates ──
+  late double _latitude;
+  late double _longitude;
+  bool _locationPicked = false;
 
   static const List<String> _universities = [
     'SLTC Research University',
@@ -72,7 +79,6 @@ class _EditListingScreenState
   void initState() {
     super.initState();
 
-    // Pre-fill with existing listing data
     final location = widget.listing['location'] ?? '';
     final locationParts = location.split(', ');
 
@@ -94,6 +100,16 @@ class _EditListingScreenState
     _selectedGender = widget.listing['genderPreference'];
     _amenities = List<String>.from(
         widget.listing['amenities'] ?? []);
+
+    // ── Pre-fill existing lat/lng ──
+    _latitude = (widget.listing['latitude'] as num? ?? 6.9271).toDouble();
+    _longitude = (widget.listing['longitude'] as num? ?? 79.8612).toDouble();
+
+    // If listing already has valid coordinates
+    if (_latitude != 0.0 && _longitude != 0.0 &&
+        _latitude != 6.9271) {
+      _locationPicked = true;
+    }
   }
 
   @override
@@ -118,8 +134,60 @@ class _EditListingScreenState
   }
 
   // ─────────────────────────────────────────────
+  // GEOCODE LOCATION
+  // ─────────────────────────────────────────────
+  Future<LatLng?> _geocodeLocation() async {
+    try {
+      final query =
+          '${_locationController.text.trim()}, ${_cityController.text.trim()}, Sri Lanka';
+      final locations = await locationFromAddress(query);
+      if (locations.isNotEmpty) {
+        return LatLng(
+            locations.first.latitude, locations.first.longitude);
+      }
+    } catch (e) {
+      print('Geocoding error: $e');
+    }
+    return null;
+  }
+
+  // ─────────────────────────────────────────────
+  // OPEN MAP PICKER
+  // ─────────────────────────────────────────────
+  Future<void> _openMapPicker() async {
+    LatLng initialPosition = LatLng(_latitude, _longitude);
+
+    if (!_locationPicked &&
+        (_locationController.text.isNotEmpty ||
+            _cityController.text.isNotEmpty)) {
+      final geocoded = await _geocodeLocation();
+      if (geocoded != null) {
+        initialPosition = geocoded;
+      }
+    }
+
+    if (!mounted) return;
+
+    final LatLng? pickedLocation = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _MapPickerScreen(
+          initialPosition: initialPosition,
+        ),
+      ),
+    );
+
+    if (pickedLocation != null) {
+      setState(() {
+        _latitude = pickedLocation.latitude;
+        _longitude = pickedLocation.longitude;
+        _locationPicked = true;
+      });
+    }
+  }
+
+  // ─────────────────────────────────────────────
   // SAVE CHANGES
-  // Updates listing in Firestore
   // ─────────────────────────────────────────────
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
@@ -144,10 +212,17 @@ class _EditListingScreenState
 
     try {
       final listingId = widget.listing['listingId'] ?? '';
-      final price =
-          double.tryParse(_priceController.text) ?? 0;
-      final slots =
-          int.tryParse(_slotsController.text) ?? 1;
+      final price = double.tryParse(_priceController.text) ?? 0;
+      final slots = int.tryParse(_slotsController.text) ?? 1;
+
+      // Auto geocode if not manually picked
+      if (!_locationPicked) {
+        final geocoded = await _geocodeLocation();
+        if (geocoded != null) {
+          _latitude = geocoded.latitude;
+          _longitude = geocoded.longitude;
+        }
+      }
 
       await FirebaseFirestore.instance
           .collection('listings')
@@ -166,6 +241,8 @@ class _EditListingScreenState
         'totalCapacity': slots,
         'amenities': _amenities,
         'houseRules': _houseRulesController.text.trim(),
+        'latitude': _latitude,
+        'longitude': _longitude,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
@@ -230,8 +307,8 @@ class _EditListingScreenState
                             controller: _locationController,
                             hint: 'e.g. Kamburupitiya',
                             icon: Icons.location_on_outlined,
-                            validator: (v) => v!.isEmpty
-                                ? 'Required' : null,
+                            validator: (v) =>
+                                v!.isEmpty ? 'Required' : null,
                           ),
                           const SizedBox(height: 16),
                           _buildLabel('City'),
@@ -240,9 +317,75 @@ class _EditListingScreenState
                             controller: _cityController,
                             hint: 'e.g. Matara',
                             icon: Icons.location_city_outlined,
-                            validator: (v) => v!.isEmpty
-                                ? 'Required' : null,
+                            validator: (v) =>
+                                v!.isEmpty ? 'Required' : null,
                           ),
+                          const SizedBox(height: 12),
+
+                          // ── Map Picker Button ──
+                          GestureDetector(
+                            onTap: _openMapPicker,
+                            child: Container(
+                              width: double.infinity,
+                              padding:
+                                  const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                      horizontal: 16),
+                              decoration: BoxDecoration(
+                                color: _locationPicked
+                                    ? const Color(0xFFEAF3DE)
+                                    : Colors.white,
+                                borderRadius:
+                                    BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: _locationPicked
+                                      ? const Color(0xFF3B6D11)
+                                      : const Color(0xFFF09418),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    _locationPicked
+                                        ? Icons
+                                            .check_circle_rounded
+                                        : Icons.map_outlined,
+                                    color: _locationPicked
+                                        ? const Color(0xFF3B6D11)
+                                        : const Color(0xFFF09418),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      _locationPicked
+                                          ? 'Location pinned on map ✓'
+                                          : 'Pin exact location on map',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 13,
+                                        fontWeight:
+                                            FontWeight.w600,
+                                        color: _locationPicked
+                                            ? const Color(
+                                                0xFF3B6D11)
+                                            : const Color(
+                                                0xFFF09418),
+                                      ),
+                                    ),
+                                  ),
+                                  if (_locationPicked)
+                                    Text('Change',
+                                        style:
+                                            GoogleFonts.poppins(
+                                          fontSize: 11,
+                                          color: const Color(
+                                              0xFF5C6B8A),
+                                        )),
+                                ],
+                              ),
+                            ),
+                          ),
+
                           const SizedBox(height: 16),
                           Row(
                             children: [
@@ -299,11 +442,10 @@ class _EditListingScreenState
                                         'Price/Month (LKR)'),
                                     const SizedBox(height: 8),
                                     _buildTextField(
-                                      controller:
-                                          _priceController,
+                                      controller: _priceController,
                                       hint: 'e.g. 8500',
-                                      icon: Icons
-                                          .payments_outlined,
+                                      icon:
+                                          Icons.payments_outlined,
                                       keyboardType:
                                           TextInputType.number,
                                       validator: (v) =>
@@ -323,8 +465,7 @@ class _EditListingScreenState
                                     _buildLabel('Total Slots'),
                                     const SizedBox(height: 8),
                                     _buildTextField(
-                                      controller:
-                                          _slotsController,
+                                      controller: _slotsController,
                                       hint: 'e.g. 4',
                                       icon: Icons
                                           .people_outline_rounded,
@@ -389,13 +530,13 @@ class _EditListingScreenState
   }
 
   Widget _buildHeader() {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
           onTap: () => Navigator.pop(context),
           child: Container(
-            width: 40,
-            height: 40,
+            width: 40, height: 40,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
@@ -406,21 +547,17 @@ class _EditListingScreenState
                 color: Color(0xFFF09418), size: 18),
           ),
         ),
-        const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Edit Listing',
-                style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1A2E))),
-            Text('Update your boarding details',
-                style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: const Color(0xFF5C6B8A))),
-          ],
-        ),
+        const SizedBox(height: 20),
+        Text('Edit Listing',
+            style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF1A1A2E))),
+        const SizedBox(height: 4),
+        Text('Update your boarding details',
+            style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: const Color(0xFF5C6B8A))),
       ],
     );
   }
@@ -456,8 +593,7 @@ class _EditListingScreenState
           icon: Icon(Icons.keyboard_arrow_down_rounded,
               color: Colors.grey.shade400),
           style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: const Color(0xFF1A1A2E)),
+              fontSize: 14, color: const Color(0xFF1A1A2E)),
           onChanged: (val) =>
               setState(() => _selectedUniversity = val),
           items: _universities
@@ -501,8 +637,7 @@ class _EditListingScreenState
           icon: Icon(Icons.keyboard_arrow_down_rounded,
               color: Colors.grey.shade400, size: 18),
           style: GoogleFonts.poppins(
-              fontSize: 13,
-              color: const Color(0xFF1A1A2E)),
+              fontSize: 13, color: const Color(0xFF1A1A2E)),
           onChanged: onChanged,
           items: items
               .map((item) => DropdownMenuItem(
@@ -545,8 +680,7 @@ class _EditListingScreenState
                               fontWeight: FontWeight.w500)),
                       const SizedBox(width: 4),
                       const Icon(Icons.close_rounded,
-                          size: 14,
-                          color: Color(0xFF3B6D11)),
+                          size: 14, color: Color(0xFF3B6D11)),
                     ],
                   ),
                 ),
@@ -567,8 +701,7 @@ class _EditListingScreenState
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.add_rounded,
-                        size: 14,
-                        color: Color(0xFFF09418)),
+                        size: 14, color: Color(0xFFF09418)),
                     const SizedBox(width: 4),
                     Text('Add',
                         style: GoogleFonts.poppins(
@@ -608,10 +741,8 @@ class _EditListingScreenState
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children:
-                    _suggestedAmenities.map((amenity) {
-                  final isAdded =
-                      _amenities.contains(amenity);
+                children: _suggestedAmenities.map((amenity) {
+                  final isAdded = _amenities.contains(amenity);
                   return GestureDetector(
                     onTap: () {
                       if (isAdded) {
@@ -697,8 +828,7 @@ class _EditListingScreenState
         child: Center(
           child: _isLoading
               ? const SizedBox(
-                  width: 24,
-                  height: 24,
+                  width: 24, height: 24,
                   child: CircularProgressIndicator(
                       color: Colors.white, strokeWidth: 2.5))
               : Row(
@@ -775,5 +905,176 @@ class _EditListingScreenState
             fontSize: 13,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF1A1A2E)));
+  }
+}
+
+// ─────────────────────────────────────────────
+// MAP PICKER SCREEN
+// ─────────────────────────────────────────────
+class _MapPickerScreen extends StatefulWidget {
+  final LatLng initialPosition;
+
+  const _MapPickerScreen({required this.initialPosition});
+
+  @override
+  State<_MapPickerScreen> createState() =>
+      _MapPickerScreenState();
+}
+
+class _MapPickerScreenState extends State<_MapPickerScreen> {
+  GoogleMapController? _mapController;
+  late LatLng _selectedPosition;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedPosition = widget.initialPosition;
+  }
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          GoogleMap(
+            onMapCreated: (controller) {
+              _mapController = controller;
+            },
+            initialCameraPosition: CameraPosition(
+              target: _selectedPosition,
+              zoom: 15,
+            ),
+            markers: {
+              Marker(
+                markerId: const MarkerId('selected'),
+                position: _selectedPosition,
+                draggable: true,
+                onDragEnd: (newPosition) {
+                  setState(
+                      () => _selectedPosition = newPosition);
+                },
+              ),
+            },
+            onTap: (position) {
+              setState(() => _selectedPosition = position);
+            },
+            myLocationButtonEnabled: true,
+            myLocationEnabled: true,
+            zoomControlsEnabled: true,
+          ),
+
+          // ── Back button (top) + Instruction (below) ──
+          Positioned(
+            top: 50,
+            left: 16,
+            right: 16,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 40, height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                        Icons.arrow_back_ios_rounded,
+                        color: Color(0xFFF09418), size: 18),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.touch_app_rounded,
+                          color: Color(0xFFF09418), size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Tap on map or drag marker to update location',
+                          style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: const Color(0xFF1A1A2E)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Confirm button ──
+          Positioned(
+            bottom: 40,
+            left: 24,
+            right: 24,
+            child: GestureDetector(
+              onTap: () =>
+                  Navigator.pop(context, _selectedPosition),
+              child: Container(
+                width: double.infinity,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF09418),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFF09418)
+                          .withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.check_circle_rounded,
+                          color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      Text('Confirm Location',
+                          style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
