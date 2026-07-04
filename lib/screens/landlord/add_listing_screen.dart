@@ -1018,53 +1018,37 @@ class _MapPickerScreenState extends State<_MapPickerScreen> {
             zoomControlsEnabled: true,
           ),
 
-          // ── Top instruction bar ──
+          // ── Back button (top) + Instruction (below) ──
           Positioned(
             top: 50,
             left: 16,
             right: 16,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.touch_app_rounded,
-                      color: Color(0xFFF09418), size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Tap on map or drag marker to set exact location',
-                      style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: const Color(0xFF1A1A2E)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 40, height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                        ),
+                      ],
                     ),
+                    child: const Icon(
+                        Icons.arrow_back_ios_rounded,
+                        color: Color(0xFFF09418), size: 18),
                   ),
-                ],
-              ),
-            ),
-          ),
-
-          // ── Back button ──
-          Positioned(
-            top: 50,
-            left: 16,
-            child: Container(
-              margin: const EdgeInsets.only(top: 60),
-              child: GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: 40, height: 40,
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
@@ -1072,14 +1056,27 @@ class _MapPickerScreenState extends State<_MapPickerScreen> {
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
                         blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  child: const Icon(
-                      Icons.arrow_back_ios_rounded,
-                      color: Color(0xFFF09418), size: 18),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.touch_app_rounded,
+                          color: Color(0xFFF09418), size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Tap on map or drag marker to set exact location',
+                          style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: const Color(0xFF1A1A2E)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
 
