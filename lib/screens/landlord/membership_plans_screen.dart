@@ -265,12 +265,14 @@ class MembershipPlansScreen extends StatelessWidget {
           // Select plan button
           GestureDetector(
             onTap: () {
-              // Navigate to auth screen for registration
+              // Navigate to auth screen Sign Up tab
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>
-                      const AuthScreen(role: 'landlord'),
+                  builder: (_) => AuthScreen(
+                    role: 'landlord',
+                    initialTabIndex: 1,
+                  ),
                 ),
                 (route) => false,
               );
