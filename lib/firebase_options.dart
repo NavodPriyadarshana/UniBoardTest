@@ -17,6 +17,6 @@ class DefaultFirebaseOptions {
     appId: '1:554742916529:android:a58096ade9588eefb4c990',
     messagingSenderId: '554742916529',
     projectId: 'uniboard-fd52f',
-    storageBucket: 'uniboard-fd52f.appspot.com',
+    storageBucket: 'uniboard-fd52f.firebasestorage.app',
   );
 }
