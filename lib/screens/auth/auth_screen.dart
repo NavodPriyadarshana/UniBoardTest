@@ -7,7 +7,12 @@ import '../landlord/landlord_home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   final String role;
-  const AuthScreen({super.key, required this.role});
+  final int initialTabIndex;
+  const AuthScreen({
+    super.key,
+    required this.role,
+    this.initialTabIndex = 0,
+  });
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -22,8 +27,9 @@ class _AuthScreenState extends State<AuthScreen>
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: widget.role == 'landlord' ? 1 : 2,
+      length: 2,
       vsync: this,
+      initialIndex: widget.initialTabIndex,
     );
   }
 
@@ -108,14 +114,7 @@ class _AuthScreenState extends State<AuthScreen>
                       Expanded(
                         child: TabBarView(
                           controller: _tabController,
-                          children: widget.role == 'landlord'
-                              ? [
-                                  _SignInForm(
-                                    role: widget.role,
-                                    roleColor: _roleColor,
-                                  ),
-                                ]
-                              : [
+                          children: [
                                   _SignInForm(
                                     role: widget.role,
                                     roleColor: _roleColor,
@@ -169,11 +168,9 @@ class _AuthScreenState extends State<AuthScreen>
               fontWeight: FontWeight.w600, fontSize: 14),
           unselectedLabelStyle: GoogleFonts.poppins(
               fontWeight: FontWeight.w500, fontSize: 14),
-          tabs: widget.role == 'landlord'
-              ? [const Tab(text: 'Sign In')]
-              : [
-                  const Tab(text: 'Sign In'),
-                  const Tab(text: 'Sign Up'),
+          tabs: const [
+                  Tab(text: 'Sign In'),
+                  Tab(text: 'Sign Up'),
                 ],
         ),
       ),
@@ -600,7 +597,37 @@ class _SignUpFormState extends State<_SignUpForm> {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
+
+            // ── Hint for landlord registration ──
+            if (widget.role == 'landlord')
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF8EC),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFF09418)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline_rounded,
+                        size: 16, color: Color(0xFFF09418)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Please register with the same email used during pre-registration.',
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          color: const Color(0xFF854F0B),
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            const SizedBox(height: 16),
             _buildLabel('Full name'),
             const SizedBox(height: 8),
             _buildTextField(
