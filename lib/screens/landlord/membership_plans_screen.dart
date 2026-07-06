@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:payhere_mobilesdk_flutter/payhere_mobilesdk_flutter.dart';
 import '../auth/auth_screen.dart';
@@ -43,8 +44,8 @@ class MembershipPlansScreen extends StatelessWidget {
     // ── PayHere payment object ──
     Map paymentObject = {
       "sandbox": true,
-      "merchant_id": "1236736",
-      "merchant_secret": "MjY2ODM4NDUzNzQ5MDI4Nzk3NDQwNTU4MTU3Njk0Mjc2NTgwMjY3",
+      "merchant_id": dotenv.env['PAYHERE_MERCHANT_ID'] ?? '',
+      "merchant_secret": dotenv.env['PAYHERE_SECRET'] ?? '',
       "notify_url": "https://uniboard-fd52f.web.app",
       "order_id": "ORD${DateTime.now().millisecondsSinceEpoch}",
       "items": "UniBoard $planName Plan",
