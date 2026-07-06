@@ -37,6 +37,9 @@ dependencies:
   uuid: ^4.5.1
   shared_preferences: ^2.5.3
 
+  # Payment
+  payhere_mobilesdk_flutter: ^3.2.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
