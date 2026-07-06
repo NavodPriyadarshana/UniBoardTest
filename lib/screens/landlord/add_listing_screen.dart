@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart';
 import '../../services/auth_service.dart';
@@ -41,6 +44,10 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
   // Amenities list
   List<String> _amenities = [];
+
+  // ── Photos ──
+  List<File> _selectedPhotos = [];
+  final ImagePicker _imagePicker = ImagePicker();
 
   // ── Location coordinates ──
   double _latitude = 6.9271;
@@ -97,6 +104,54 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
   void _removeAmenity(String amenity) {
     setState(() => _amenities.remove(amenity));
+  }
+
+  // ─────────────────────────────────────────────
+  // PICK PHOTOS
+  // ─────────────────────────────────────────────
+  Future<void> _pickPhotos() async {
+    if (_selectedPhotos.length >= 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Maximum 5 photos allowed'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final List<XFile> images = await _imagePicker
+        .pickMultiImage(imageQuality: 70);
+
+    if (images.isNotEmpty) {
+      setState(() {
+        final remaining = 5 - _selectedPhotos.length;
+        final toAdd = images.take(remaining).toList();
+        _selectedPhotos.addAll(
+            toAdd.map((x) => File(x.path)).toList());
+      });
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // UPLOAD PHOTOS TO FIREBASE STORAGE
+  // ─────────────────────────────────────────────
+  Future<List<String>> _uploadPhotos(String listingId) async {
+    final List<String> photoUrls = [];
+    for (int i = 0; i < _selectedPhotos.length; i++) {
+      try {
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('listing_photos/$listingId/photo_$i.jpg');
+        final uploadTask =
+            await ref.putFile(_selectedPhotos[i]);
+        final url = await uploadTask.ref.getDownloadURL();
+        photoUrls.add(url);
+      } catch (e) {
+        print('❌ Photo upload error: $e');
+      }
+    }
+    return photoUrls;
   }
 
   // ─────────────────────────────────────────────
@@ -196,6 +251,12 @@ class _AddListingScreenState extends State<AddListingScreen> {
           .doc()
           .id;
 
+      // ── Upload photos ──
+      List<String> photoUrls = [];
+      if (_selectedPhotos.isNotEmpty) {
+        photoUrls = await _uploadPhotos(listingId);
+      }
+
       final price = double.tryParse(_priceController.text) ?? 0;
       final slots = int.tryParse(_slotsController.text) ?? 1;
 
@@ -220,7 +281,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
         'currentOccupants': 0,
         'amenities': _amenities,
         'houseRules': _houseRulesController.text.trim(),
-        'photos': [],
+        'photos': photoUrls,
         'isVerified': false,
         'membershipActive': true,
         'latitude': _latitude,
@@ -562,6 +623,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
                                 : null,
                           ),
                           const SizedBox(height: 24),
+                          _buildPhotoSection(),
+                          const SizedBox(height: 16),
                           _buildPublishButton(),
                           const SizedBox(height: 16),
                         ],
@@ -851,6 +914,93 @@ class _AddListingScreenState extends State<AddListingScreen> {
           ),
         );
       },
+    );
+  }
+
+  // ── Photo Section Widget ──
+  Widget _buildPhotoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel('Property Photos'),
+        const SizedBox(height: 4),
+        Text('Add up to 5 photos of your property',
+            style: GoogleFonts.poppins(
+                fontSize: 11, color: Colors.grey.shade500)),
+        const SizedBox(height: 10),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              // Add photo button
+              if (_selectedPhotos.length < 5)
+                GestureDetector(
+                  onTap: _pickPhotos,
+                  child: Container(
+                    width: 90, height: 90,
+                    margin: const EdgeInsets.only(right: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: const Color(0xFFF09418),
+                          style: BorderStyle.solid),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.add_a_photo_rounded,
+                            color: Color(0xFFF09418), size: 28),
+                        const SizedBox(height: 4),
+                        Text('Add Photo',
+                            style: GoogleFonts.poppins(
+                                fontSize: 10,
+                                color: const Color(0xFFF09418))),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Selected photos
+              ..._selectedPhotos.asMap().entries.map((entry) {
+                final index = entry.key;
+                final photo = entry.value;
+                return Stack(
+                  children: [
+                    Container(
+                      width: 90, height: 90,
+                      margin: const EdgeInsets.only(right: 10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        image: DecorationImage(
+                          image: FileImage(photo),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 4, right: 14,
+                      child: GestureDetector(
+                        onTap: () => setState(() =>
+                            _selectedPhotos.removeAt(index)),
+                        child: Container(
+                          width: 22, height: 22,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.close,
+                              color: Colors.white, size: 14),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
