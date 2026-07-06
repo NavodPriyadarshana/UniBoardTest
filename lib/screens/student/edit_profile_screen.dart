@@ -6,11 +6,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../services/auth_service.dart';
 
-// ─────────────────────────────────────────────
-// EDIT PROFILE SCREEN
-// Student can update name, phone and university.
-// Email is not editable (Firebase restriction).
-// ─────────────────────────────────────────────
 class EditProfileScreen extends StatefulWidget {
   final String currentName;
   final String currentPhone;
@@ -62,8 +57,7 @@ class _EditProfileScreenState
         TextEditingController(text: widget.currentName);
     _phoneController =
         TextEditingController(text: widget.currentPhone);
-    _selectedUniversity = widget.currentUniversity
-            .isNotEmpty
+    _selectedUniversity = widget.currentUniversity.isNotEmpty
         ? widget.currentUniversity
         : null;
   }
@@ -75,9 +69,6 @@ class _EditProfileScreenState
     super.dispose();
   }
 
-  // ─────────────────────────────────────────────
-  // PICK IMAGE — Camera or Gallery
-  // ─────────────────────────────────────────────
   Future<void> _pickImage() async {
     showModalBottomSheet(
       context: context,
@@ -90,83 +81,64 @@ class _EditProfileScreenState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Select Profile Photo',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF1A1A2E),
-              ),
-            ),
+            Text('Select Profile Photo',
+                style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1A1A2E))),
             const SizedBox(height: 20),
             Row(
               children: [
-                // Camera option
                 Expanded(
                   child: GestureDetector(
                     onTap: () async {
                       Navigator.pop(context);
-                      await _selectImage(
-                          ImageSource.camera);
+                      await _selectImage(ImageSource.camera);
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE3EDF4),
-                        borderRadius:
-                            BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Column(
                         children: [
-                          const Icon(
-                              Icons.camera_alt_rounded,
-                              color: Color(0xFF2B658B),
-                              size: 32),
+                          const Icon(Icons.camera_alt_rounded,
+                              color: Color(0xFF2B658B), size: 32),
                           const SizedBox(height: 8),
                           Text('Camera',
                               style: GoogleFonts.poppins(
                                   fontSize: 13,
-                                  fontWeight:
-                                      FontWeight.w600,
-                                  color: const Color(
-                                      0xFF2B658B))),
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF2B658B))),
                         ],
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Gallery option
                 Expanded(
                   child: GestureDetector(
                     onTap: () async {
                       Navigator.pop(context);
-                      await _selectImage(
-                          ImageSource.gallery);
+                      await _selectImage(ImageSource.gallery);
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEAF3DE),
-                        borderRadius:
-                            BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Column(
                         children: [
-                          const Icon(
-                              Icons.photo_library_rounded,
-                              color: Color(0xFF3B6D11),
-                              size: 32),
+                          const Icon(Icons.photo_library_rounded,
+                              color: Color(0xFF3B6D11), size: 32),
                           const SizedBox(height: 8),
                           Text('Gallery',
                               style: GoogleFonts.poppins(
                                   fontSize: 13,
-                                  fontWeight:
-                                      FontWeight.w600,
-                                  color: const Color(
-                                      0xFF3B6D11))),
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF3B6D11))),
                         ],
                       ),
                     ),
@@ -184,37 +156,27 @@ class _EditProfileScreenState
   Future<void> _selectImage(ImageSource source) async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(
-      source: source,
-      imageQuality: 70,
-      maxWidth: 400,
-    );
+        source: source, imageQuality: 70, maxWidth: 400);
     if (picked != null) {
       setState(() => _pickedImage = File(picked.path));
     }
   }
 
-  // ─────────────────────────────────────────────
-  // UPLOAD IMAGE TO FIREBASE STORAGE
-  // ─────────────────────────────────────────────
   Future<String?> _uploadImage(String userId) async {
     if (_pickedImage == null) return null;
     try {
       final ref = FirebaseStorage.instance
           .ref()
           .child('profile_pictures')
-          .child('$userId.jpg');
+          .child('\$userId.jpg');
       await ref.putFile(_pickedImage!);
       return await ref.getDownloadURL();
     } catch (e) {
-      print('❌ Error uploading image: $e');
+      print('❌ Error uploading image: \$e');
       return null;
     }
   }
 
-  // ─────────────────────────────────────────────
-  // SAVE CHANGES
-  // Updates user document in Firestore
-  // ─────────────────────────────────────────────
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
@@ -223,7 +185,6 @@ class _EditProfileScreenState
       final currentUser = _authService.currentUser;
       if (currentUser == null) return;
 
-      // Upload image if picked
       String? imageUrl;
       if (_pickedImage != null) {
         imageUrl = await _uploadImage(currentUser.uid);
@@ -254,11 +215,11 @@ class _EditProfileScreenState
         Navigator.pop(context, true);
       }
     } catch (e) {
-      print('❌ Error updating profile: $e');
+      print('❌ Error updating profile: \$e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update profile'),
+            content: const Text('Failed to update profile'),
             backgroundColor: Colors.red.shade400,
           ),
         );
@@ -292,8 +253,7 @@ class _EditProfileScreenState
                     child: Form(
                       key: _formKey,
                       child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           _buildHeader(),
                           const SizedBox(height: 24),
@@ -316,8 +276,7 @@ class _EditProfileScreenState
                             controller: _phoneController,
                             hint: 'Enter your phone number',
                             icon: Icons.phone_outlined,
-                            keyboardType:
-                                TextInputType.phone,
+                            keyboardType: TextInputType.phone,
                             validator: (v) => v!.isEmpty
                                 ? 'Please enter your phone'
                                 : null,
@@ -327,8 +286,6 @@ class _EditProfileScreenState
                           const SizedBox(height: 8),
                           _buildUniversityDropdown(),
                           const SizedBox(height: 16),
-
-                          // Email — not editable
                           _buildLabel('Email Address'),
                           const SizedBox(height: 8),
                           Container(
@@ -336,42 +293,32 @@ class _EditProfileScreenState
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: Colors.grey.shade100,
-                              borderRadius:
-                                  BorderRadius.circular(14),
-                              border: Border.all(
-                                  color: Colors.grey.shade300),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: Colors.grey.shade300),
                             ),
                             child: Row(
                               children: [
                                 Icon(Icons.email_outlined,
-                                    color: Colors.grey.shade400,
-                                    size: 20),
+                                    color: Colors.grey.shade400, size: 20),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
-                                    _authService.currentUser
-                                            ?.email ??
-                                        '',
+                                    _authService.currentUser?.email ?? '',
                                     style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      color: Colors.grey.shade500,
-                                    ),
+                                        fontSize: 14,
+                                        color: Colors.grey.shade500),
                                   ),
                                 ),
                                 Icon(Icons.lock_outline_rounded,
-                                    color: Colors.grey.shade400,
-                                    size: 16),
+                                    color: Colors.grey.shade400, size: 16),
                               ],
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            'Email cannot be changed',
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              color: Colors.grey.shade400,
-                            ),
-                          ),
+                          Text('Email cannot be changed',
+                              style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade400)),
                           const SizedBox(height: 32),
                           _buildSaveButton(),
                         ],
@@ -387,54 +334,38 @@ class _EditProfileScreenState
     );
   }
 
-  // ── Header ──
+  // ── Header — back button on top, title below ──
   Widget _buildHeader() {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
           onTap: () => Navigator.pop(context),
           child: Container(
-            width: 40,
-            height: 40,
+            width: 40, height: 40,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border:
-                  Border.all(color: const Color(0xFFDDE3F0)),
+              border: Border.all(color: const Color(0xFFDDE3F0)),
             ),
-            child: const Icon(
-              Icons.arrow_back_ios_rounded,
-              color: Color(0xFF2B658B),
-              size: 18,
-            ),
+            child: const Icon(Icons.arrow_back_ios_rounded,
+                color: Color(0xFF2B658B), size: 18),
           ),
         ),
-        const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Edit Profile',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
+        const SizedBox(height: 20),
+        Text('Edit Profile',
+            style: GoogleFonts.poppins(
+                fontSize: 22,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF1A1A2E),
-              ),
-            ),
-            Text(
-              'Update your information',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: const Color(0xFF5C6B8A),
-              ),
-            ),
-          ],
-        ),
+                color: const Color(0xFF1A1A2E))),
+        const SizedBox(height: 4),
+        Text('Update your information',
+            style: GoogleFonts.poppins(
+                fontSize: 13, color: const Color(0xFF5C6B8A))),
       ],
     );
   }
 
-  // ── Avatar ──
   Widget _buildAvatar() {
     final String name = _nameController.text;
     final String initial =
@@ -452,27 +383,21 @@ class _EditProfileScreenState
                   ? FileImage(_pickedImage!)
                   : null,
               child: _pickedImage == null
-                  ? Text(
-                      initial,
+                  ? Text(initial,
                       style: GoogleFonts.poppins(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    )
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white))
                   : null,
             ),
             Positioned(
-              bottom: 0,
-              right: 0,
+              bottom: 0, right: 0,
               child: Container(
-                width: 30,
-                height: 30,
+                width: 30, height: 30,
                 decoration: BoxDecoration(
                   color: const Color(0xFFF09418),
                   shape: BoxShape.circle,
-                  border: Border.all(
-                      color: Colors.white, width: 2),
+                  border: Border.all(color: Colors.white, width: 2),
                 ),
                 child: const Icon(Icons.camera_alt_outlined,
                     size: 14, color: Colors.white),
@@ -484,7 +409,6 @@ class _EditProfileScreenState
     );
   }
 
-  // ── University dropdown ──
   Widget _buildUniversityDropdown() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -507,24 +431,21 @@ class _EditProfileScreenState
               const SizedBox(width: 10),
               Text('Select university',
                   style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.grey.shade400)),
+                      fontSize: 14, color: Colors.grey.shade400)),
             ],
           ),
           isExpanded: true,
           icon: Icon(Icons.keyboard_arrow_down_rounded,
               color: Colors.grey.shade400),
           style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: const Color(0xFF1A1A2E)),
+              fontSize: 14, color: const Color(0xFF1A1A2E)),
           onChanged: (val) =>
               setState(() => _selectedUniversity = val),
           items: _universities
               .map((u) => DropdownMenuItem(
                     value: u,
                     child: Text(u,
-                        style:
-                            GoogleFonts.poppins(fontSize: 13)),
+                        style: GoogleFonts.poppins(fontSize: 13)),
                   ))
               .toList(),
         ),
@@ -532,7 +453,6 @@ class _EditProfileScreenState
     );
   }
 
-  // ── Save button ──
   Widget _buildSaveButton() {
     return GestureDetector(
       onTap: _isLoading ? null : _saveChanges,
@@ -553,24 +473,19 @@ class _EditProfileScreenState
         child: Center(
           child: _isLoading
               ? const SizedBox(
-                  width: 24,
-                  height: 24,
+                  width: 24, height: 24,
                   child: CircularProgressIndicator(
                       color: Colors.white, strokeWidth: 2.5))
-              : Text(
-                  'Save Changes',
+              : Text('Save Changes',
                   style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white)),
         ),
       ),
     );
   }
 
-  // ── Text field ──
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,
@@ -588,14 +503,12 @@ class _EditProfileScreenState
         hintText: hint,
         hintStyle: GoogleFonts.poppins(
             fontSize: 13, color: Colors.grey.shade400),
-        prefixIcon:
-            Icon(icon, color: Colors.grey.shade400, size: 20),
+        prefixIcon: Icon(icon, color: Colors.grey.shade400, size: 20),
         filled: true,
         fillColor: Colors.white,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide:
-              const BorderSide(color: Color(0xFFDDE3F0)),
+          borderSide: const BorderSide(color: Color(0xFFDDE3F0)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -604,13 +517,11 @@ class _EditProfileScreenState
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide:
-              const BorderSide(color: Colors.red, width: 1.5),
+          borderSide: const BorderSide(color: Colors.red, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide:
-              const BorderSide(color: Colors.red, width: 2),
+          borderSide: const BorderSide(color: Colors.red, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(
             horizontal: 16, vertical: 14),
@@ -619,13 +530,10 @@ class _EditProfileScreenState
   }
 
   Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: GoogleFonts.poppins(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: const Color(0xFF1A1A2E),
-      ),
-    );
+    return Text(text,
+        style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF1A1A2E)));
   }
 }
