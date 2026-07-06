@@ -56,7 +56,7 @@ class _ListingDetailScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ListingImageArea(listing: widget.listing),
+                    _buildPhotoGallery(),
 
                     Padding(
                       padding: const EdgeInsets.all(20),
@@ -178,12 +178,12 @@ class _ListingDetailScreenState
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 2),
         Row(
           children: [
             const Icon(Icons.location_on_rounded,
                 size: 14, color: Color(0xFF2B658B)),
-            const SizedBox(width: 4),
+            const SizedBox(width: 8),
             Text(
               widget.listing['location'] ?? '',
               style: GoogleFonts.poppins(
@@ -194,6 +194,101 @@ class _ListingDetailScreenState
           ],
         ),
       ],
+    );
+  }
+
+  // ── Photo Gallery ──
+  Widget _buildPhotoGallery() {
+    final List<dynamic> photos =
+        widget.listing['photos'] as List<dynamic>? ?? [];
+
+    if (photos.isEmpty) {
+      return ListingImageArea(listing: widget.listing);
+    }
+
+    return SizedBox(
+      height: 250,
+      child: Stack(
+        children: [
+          PageView.builder(
+            itemCount: photos.length,
+            itemBuilder: (context, index) {
+              return Stack(
+                children: [
+                  Image.network(
+                    photos[index],
+                    width: double.infinity,
+                    height: 250,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return Container(
+                        height: 250,
+                        color: const Color(0xFF2B658B),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                              color: Colors.white),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stack) {
+                      return ListingImageArea(
+                          listing: widget.listing);
+                    },
+                  ),
+                  // Photo counter
+                  Positioned(
+                    bottom: 12, right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '${index + 1}/${photos.length}',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+
+          // ── Back button ──
+          Positioned(
+            top: 25,
+            left: 16,
+            child: SafeArea(
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                      Icons.arrow_back_ios_rounded,
+                      color: Color(0xFF2B658B),
+                      size: 18),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
