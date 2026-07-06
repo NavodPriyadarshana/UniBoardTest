@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../screens/student/listing_detail_screen.dart';
+
 
 // ─────────────────────────────────────────────
 // LISTING CARD WIDGET
@@ -67,6 +69,11 @@ class _ListingCardState extends State<ListingCard> {
 
   // ── Image area with badges ──
   Widget _buildImageArea(Color cardColor, int slotsLeft, String roomType) {
+    final List<dynamic> photos =
+        widget.listing['photos'] as List<dynamic>? ?? [];
+    final String? firstPhoto =
+        photos.isNotEmpty ? photos[0] as String : null;
+
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
       child: Container(
@@ -81,14 +88,37 @@ class _ListingCardState extends State<ListingCard> {
         ),
         child: Stack(
           children: [
-            // Background icon
-            Center(
-              child: Icon(
-                Icons.home_rounded,
-                size: 64,
-                color: Colors.white.withOpacity(0.2),
+            // Show photo or placeholder
+            if (firstPhoto != null)
+              CachedNetworkImage(
+                imageUrl: firstPhoto,
+                width: double.infinity,
+                height: 148,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Center(
+                  child: Icon(
+                    Icons.home_rounded,
+                    size: 64,
+                    color: Colors.white.withOpacity(0.2),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Center(
+                  child: Icon(
+                    Icons.home_rounded,
+                    size: 64,
+                    color: Colors.white.withOpacity(0.2),
+                  ),
+                ),
+              )
+            else
+              // Background icon placeholder
+              Center(
+                child: Icon(
+                  Icons.home_rounded,
+                  size: 64,
+                  color: Colors.white.withOpacity(0.2),
+                ),
               ),
-            ),
 
             // Room type badge
             Positioned(
