@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
+import {
+  GraduationCap, Home, ClipboardList,
+  CalendarCheck, Clock, Bell
+} from 'lucide-react';
 import { db } from '../firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
-function StatCard({ icon, label, value, color }) {
+function StatCard({ icon: Icon, label, value, color }) {
   return (
     <div style={{
       background: 'white',
@@ -12,6 +16,7 @@ function StatCard({ icon, label, value, color }) {
       display: 'flex',
       alignItems: 'center',
       gap: 16,
+      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
     }}>
       <div style={{
         width: 48, height: 48,
@@ -20,9 +25,8 @@ function StatCard({ icon, label, value, color }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: 24,
       }}>
-        {icon}
+        <Icon size={24} color={color} />
       </div>
       <div>
         <p style={{ fontSize: 12, color: '#5C6B8A', margin: 0 }}>{label}</p>
@@ -100,12 +104,12 @@ export default function Dashboard() {
             gap: 16,
             marginBottom: 24,
           }}>
-            <StatCard icon="🎓" label="Total Students" value={stats.students} color="#2B658B" />
-            <StatCard icon="🏠" label="Total Landlords" value={stats.landlords} color="#F09418" />
-            <StatCard icon="📋" label="Total Listings" value={stats.listings} color="#3B6D11" />
-            <StatCard icon="📅" label="Total Bookings" value={stats.bookings} color="#2B658B" />
-            <StatCard icon="⏳" label="Pending Applications" value={stats.pendingApplications} color="#F09418" />
-            <StatCard icon="🔔" label="Pending Bookings" value={stats.pendingBookings} color="#E53935" />
+            <StatCard icon={GraduationCap} label="Total Students" value={stats.students} color="#2B658B" />
+            <StatCard icon={Home} label="Total Landlords" value={stats.landlords} color="#F09418" />
+            <StatCard icon={ClipboardList} label="Total Listings" value={stats.listings} color="#3B6D11" />
+            <StatCard icon={CalendarCheck} label="Total Bookings" value={stats.bookings} color="#2B658B" />
+            <StatCard icon={Clock} label="Pending Applications" value={stats.pendingApplications} color="#F09418" />
+            <StatCard icon={Bell} label="Pending Bookings" value={stats.pendingBookings} color="#E53935" />
           </div>
 
           {/* Alerts */}
