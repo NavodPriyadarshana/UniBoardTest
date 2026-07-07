@@ -3,6 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:io';
 
 // ─────────────────────────────────────────────
 // EDIT LISTING SCREEN
@@ -40,6 +44,11 @@ class _EditListingScreenState
   String? _selectedRoomType;
   String? _selectedGender;
   List<String> _amenities = [];
+
+  // ── Photos ──
+  List<String> _existingPhotos = [];
+  List<File> _newPhotos = [];
+  final ImagePicker _imagePicker = ImagePicker();
 
   // ── Location coordinates ──
   late double _latitude;
@@ -101,6 +110,10 @@ class _EditListingScreenState
     _amenities = List<String>.from(
         widget.listing['amenities'] ?? []);
 
+    // ── Pre-fill existing photos ──
+    _existingPhotos = List<String>.from(
+        widget.listing['photos'] as List? ?? []);
+
     // ── Pre-fill existing lat/lng ──
     _latitude = (widget.listing['latitude'] as num? ?? 6.9271).toDouble();
     _longitude = (widget.listing['longitude'] as num? ?? 79.8612).toDouble();
@@ -131,6 +144,53 @@ class _EditListingScreenState
 
   void _removeAmenity(String amenity) {
     setState(() => _amenities.remove(amenity));
+  }
+
+  // ─────────────────────────────────────────────
+  // PICK NEW PHOTOS
+  // ─────────────────────────────────────────────
+  Future<void> _pickPhotos() async {
+    final total = _existingPhotos.length + _newPhotos.length;
+    if (total >= 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Maximum 5 photos allowed'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    final List<XFile> images =
+        await _imagePicker.pickMultiImage(imageQuality: 70);
+    if (images.isNotEmpty) {
+      setState(() {
+        final remaining = 5 - total;
+        final toAdd = images.take(remaining).toList();
+        _newPhotos.addAll(
+            toAdd.map((x) => File(x.path)).toList());
+      });
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // UPLOAD NEW PHOTOS
+  // ─────────────────────────────────────────────
+  Future<List<String>> _uploadNewPhotos(String listingId) async {
+    final List<String> urls = [];
+    final startIndex = _existingPhotos.length;
+    for (int i = 0; i < _newPhotos.length; i++) {
+      try {
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('listing_photos/$listingId/photo_${startIndex + i}.jpg');
+        final task = await ref.putFile(_newPhotos[i]);
+        final url = await task.ref.getDownloadURL();
+        urls.add(url);
+      } catch (e) {
+        print('❌ Photo upload error: $e');
+      }
+    }
+    return urls;
   }
 
   // ─────────────────────────────────────────────
@@ -215,6 +275,13 @@ class _EditListingScreenState
       final price = double.tryParse(_priceController.text) ?? 0;
       final slots = int.tryParse(_slotsController.text) ?? 1;
 
+      // ── Upload new photos ──
+      List<String> newPhotoUrls = [];
+      if (_newPhotos.isNotEmpty) {
+        newPhotoUrls = await _uploadNewPhotos(listingId);
+      }
+      final allPhotos = [..._existingPhotos, ...newPhotoUrls];
+
       // Auto geocode if not manually picked
       if (!_locationPicked) {
         final geocoded = await _geocodeLocation();
@@ -241,6 +308,7 @@ class _EditListingScreenState
         'totalCapacity': slots,
         'amenities': _amenities,
         'houseRules': _houseRulesController.text.trim(),
+        'photos': allPhotos,
         'latitude': _latitude,
         'longitude': _longitude,
         'updatedAt': FieldValue.serverTimestamp(),
@@ -514,6 +582,8 @@ class _EditListingScreenState
                                 : null,
                           ),
                           const SizedBox(height: 24),
+                          _buildPhotoSection(),
+                          const SizedBox(height: 16),
                           _buildSaveButton(),
                           const SizedBox(height: 16),
                         ],
@@ -805,6 +875,131 @@ class _EditListingScreenState
           ),
         );
       },
+    );
+  }
+
+  // ── Photo Section ──
+  Widget _buildPhotoSection() {
+    final totalPhotos =
+        _existingPhotos.length + _newPhotos.length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel('Property Photos'),
+        const SizedBox(height: 4),
+        Text('${totalPhotos}/5 photos added',
+            style: GoogleFonts.poppins(
+                fontSize: 11, color: Colors.grey.shade500)),
+        const SizedBox(height: 10),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              // Add photo button
+              if (totalPhotos < 5)
+                GestureDetector(
+                  onTap: _pickPhotos,
+                  child: Container(
+                    width: 90, height: 90,
+                    margin: const EdgeInsets.only(right: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: const Color(0xFFF09418)),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.add_a_photo_rounded,
+                            color: Color(0xFFF09418), size: 28),
+                        const SizedBox(height: 4),
+                        Text('Add Photo',
+                            style: GoogleFonts.poppins(
+                                fontSize: 10,
+                                color: const Color(0xFFF09418))),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Existing photos
+              ..._existingPhotos.asMap().entries.map((entry) {
+                final index = entry.key;
+                final url = entry.value;
+                return Stack(
+                  children: [
+                    Container(
+                      width: 90, height: 90,
+                      margin: const EdgeInsets.only(right: 10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        image: DecorationImage(
+                          image: NetworkImage(url),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 4, right: 14,
+                      child: GestureDetector(
+                        onTap: () => setState(() =>
+                            _existingPhotos.removeAt(index)),
+                        child: Container(
+                          width: 22, height: 22,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.close,
+                              color: Colors.white, size: 14),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+
+              // New photos
+              ..._newPhotos.asMap().entries.map((entry) {
+                final index = entry.key;
+                final file = entry.value;
+                return Stack(
+                  children: [
+                    Container(
+                      width: 90, height: 90,
+                      margin: const EdgeInsets.only(right: 10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        image: DecorationImage(
+                          image: FileImage(file),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 4, right: 14,
+                      child: GestureDetector(
+                        onTap: () => setState(() =>
+                            _newPhotos.removeAt(index)),
+                        child: Container(
+                          width: 22, height: 22,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.close,
+                              color: Colors.white, size: 14),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
