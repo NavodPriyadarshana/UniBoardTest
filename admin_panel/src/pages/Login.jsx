@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logo from '../assets/logo.png';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
@@ -23,10 +24,17 @@ export default function Login() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(180deg, #F1F9EE, #F1F3FA)',
+      width: '100%',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'linear-gradient(135deg, #F1F9EE 0%, #E3EDF4 50%, #F1F3FA 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      overflowY: 'auto',
     }}>
       <div style={{
         background: 'white',
@@ -37,10 +45,11 @@ export default function Login() {
       }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 700 }}>
-            <span style={{ color: '#2B658B' }}>Uni</span>
-            <span style={{ color: '#F09418' }}>Board</span>
-          </h1>
+          <img
+            src={logo}
+            alt="UniBoard"
+            style={{ width: 180, objectFit: 'contain', marginBottom: 8 }}
+          />
           <p style={{ color: '#5C6B8A', fontSize: 14, marginTop: 4 }}>
             Admin Portal
           </p>
