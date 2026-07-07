@@ -74,9 +74,10 @@ class MembershipPlansScreen extends StatelessWidget {
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-              builder: (_) => const AuthScreen(
+              builder: (_) => AuthScreen(
                 role: 'landlord',
                 initialTabIndex: 1,
+                prefillEmail: landlordEmail,
               ),
             ),
             (route) => false,
