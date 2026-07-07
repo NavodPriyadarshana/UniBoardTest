@@ -13,6 +13,7 @@ import './App.css';
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -58,17 +59,68 @@ function App() {
         minHeight: '100vh',
         width: '100%',
         background: '#F1F3FA',
-        overflow: 'hidden',
       }}>
-        <Sidebar />
+        {/* Mobile overlay */}
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.4)',
+              zIndex: 40,
+              display: window.innerWidth < 768 ? 'block' : 'none',
+            }}
+          />
+        )}
+
+        <Sidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+
         <div style={{
           flex: 1,
-          marginLeft: 240,
-          padding: 24,
+          marginLeft: window.innerWidth >= 768 ? 240 : 0,
+          padding: window.innerWidth >= 768 ? 24 : 16,
           minHeight: '100vh',
-          width: 'calc(100% - 240px)',
+          width: '100%',
           overflowY: 'auto',
         }}>
+          {/* Mobile header */}
+          <div style={{
+            display: window.innerWidth < 768 ? 'flex' : 'none',
+            alignItems: 'center',
+            gap: 12,
+            marginBottom: 16,
+            padding: '12px 0',
+          }}>
+            <button
+              onClick={() => setSidebarOpen(true)}
+              style={{
+                background: 'white',
+                border: '1px solid #DDE3F0',
+                borderRadius: 10,
+                padding: '8px 10px',
+                cursor: 'pointer',
+                fontSize: 18,
+              }}
+            >
+              ☰
+            </button>
+            <h2 style={{
+              fontSize: 16,
+              fontWeight: 700,
+              color: '#1A1A2E',
+              margin: 0,
+              fontFamily: 'Poppins, sans-serif',
+            }}>
+              <span style={{ color: '#2B658B' }}>Uni</span>
+              <span style={{ color: '#F09418' }}>Board</span>
+              {' '}Admin
+            </h2>
+          </div>
+
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" />} />
             <Route path="/dashboard" element={<Dashboard />} />

@@ -1,12 +1,14 @@
 import { NavLink } from 'react-router-dom';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
+import { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   FileText,
   Users,
   Home,
   LogOut,
+  X,
 } from 'lucide-react';
 
 const navItems = [
@@ -16,12 +18,25 @@ const navItems = [
   { path: '/listings', icon: Home, label: 'Listings' },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) setSidebarOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleSignOut = async () => {
     if (confirm('Are you sure you want to sign out?')) {
       await signOut(auth);
     }
   };
+
+  const isVisible = !isMobile || sidebarOpen;
 
   return (
     <div style={{
@@ -34,16 +49,44 @@ export default function Sidebar() {
       display: 'flex',
       flexDirection: 'column',
       padding: '24px 16px',
+      zIndex: 50,
+      transform: isVisible ? 'translateX(0)' : 'translateX(-100%)',
+      transition: 'transform 0.3s ease',
+      boxShadow: isMobile && sidebarOpen
+        ? '4px 0 20px rgba(0,0,0,0.15)'
+        : 'none',
     }}>
-      {/* Logo */}
-      <div style={{ marginBottom: 32, paddingLeft: 8 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1A1A2E' }}>
-          <span style={{ color: '#2B658B' }}>Uni</span>
-          <span style={{ color: '#F09418' }}>Board</span>
-        </h2>
-        <p style={{ fontSize: 11, color: '#5C6B8A', marginTop: 2 }}>
-          Admin Dashboard
-        </p>
+      {/* Header with close button on mobile */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 32,
+        paddingLeft: 8,
+      }}>
+        <div>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1A1A2E', margin: 0 }}>
+            <span style={{ color: '#2B658B' }}>Uni</span>
+            <span style={{ color: '#F09418' }}>Board</span>
+          </h2>
+          <p style={{ fontSize: 11, color: '#5C6B8A', marginTop: 2 }}>
+            Admin Dashboard
+          </p>
+        </div>
+        {isMobile && (
+          <button
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#5C6B8A',
+              padding: 4,
+            }}
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
 
       {/* Nav items */}
@@ -54,6 +97,7 @@ export default function Sidebar() {
             <NavLink
               key={item.path}
               to={item.path}
+              onClick={() => isMobile && setSidebarOpen(false)}
               style={({ isActive }) => ({
                 display: 'flex',
                 alignItems: 'center',

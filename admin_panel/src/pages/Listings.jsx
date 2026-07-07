@@ -112,7 +112,7 @@ export default function Listings() {
       ) : (
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: 16,
         }}>
           {filteredListings.map(listing => (

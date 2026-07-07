@@ -131,7 +131,7 @@ export default function Applications() {
       </div>
 
       {/* Filter tabs */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         {['all', 'pending', 'approved', 'rejected'].map(f => (
           <button
             key={f}
@@ -295,7 +295,7 @@ export default function Applications() {
                   }}>
                     Send OTP to Landlord
                   </p>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <input
                       type="text"
                       maxLength={6}

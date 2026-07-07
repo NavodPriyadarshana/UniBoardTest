@@ -98,10 +98,7 @@ export default function Dashboard() {
         <p style={{ color: '#5C6B8A' }}>Loading stats...</p>
       ) : (
         <>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 16,
+          <div className="stats-grid" style={{
             marginBottom: 24,
           }}>
             <StatCard icon={GraduationCap} label="Total Students" value={stats.students} color="#2B658B" />

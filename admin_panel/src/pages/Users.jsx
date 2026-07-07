@@ -43,7 +43,7 @@ export default function Users() {
       </div>
 
       {/* Search and filter */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         <input
           type="text"
           placeholder="Search by name or email..."
@@ -91,6 +91,7 @@ export default function Users() {
           borderRadius: 16,
           border: '1px solid #DDE3F0',
           overflow: 'hidden',
+          overflowX: 'auto',
         }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
