@@ -73,6 +73,8 @@ class _ListingCardState extends State<ListingCard> {
         widget.listing['photos'] as List<dynamic>? ?? [];
     final String? firstPhoto =
         photos.isNotEmpty ? photos[0] as String : null;
+    final bool isFullyBooked =
+        (widget.listing['availableSlots'] as num? ?? 1).toInt() <= 0;
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),

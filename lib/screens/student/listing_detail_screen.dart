@@ -37,6 +37,47 @@ class _ListingDetailScreenState
     super.dispose();
   }
 
+  // ── Book Button with Fully Booked check ──
+  Widget _buildBookButton() {
+    final availableSlots = widget.listing['availableSlots'];
+    final totalCapacity = widget.listing['totalCapacity'];
+    final currentOccupants = widget.listing['currentOccupants'];
+
+
+
+    final int slots = (availableSlots as num? ?? 0).toInt();
+    final int total = (totalCapacity as num? ?? 0).toInt();
+    final int occupants = (currentOccupants as num? ?? 0).toInt();
+
+    final bool isFullyBooked =
+        slots <= 0 || (total > 0 && occupants >= total);
+
+
+
+    if (isFullyBooked) {
+      return Container(
+        margin: const EdgeInsets.all(16),
+        width: double.infinity,
+        height: 54,
+        decoration: BoxDecoration(
+          color: Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Center(
+          child: Text(
+            'Fully Booked',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ),
+      );
+    }
+    return ListingBookButton(listing: widget.listing);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,7 +160,7 @@ class _ListingDetailScreenState
               ),
             ),
 
-            ListingBookButton(listing: widget.listing),
+            _buildBookButton(),
           ],
         ),
       ),
