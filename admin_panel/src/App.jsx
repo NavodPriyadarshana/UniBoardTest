@@ -29,6 +29,7 @@ function App() {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
+        width: '100%',
         background: '#F1F9EE'
       }}>
         <div style={{ textAlign: 'center' }}>
@@ -52,9 +53,22 @@ function App() {
 
   return (
     <Router>
-      <div style={{ display: 'flex', minHeight: '100vh', background: '#F1F3FA' }}>
+      <div style={{
+        display: 'flex',
+        minHeight: '100vh',
+        width: '100%',
+        background: '#F1F3FA',
+        overflow: 'hidden',
+      }}>
         <Sidebar />
-        <div style={{ flex: 1, marginLeft: 240, padding: 24 }}>
+        <div style={{
+          flex: 1,
+          marginLeft: 240,
+          padding: 24,
+          minHeight: '100vh',
+          width: 'calc(100% - 240px)',
+          overflowY: 'auto',
+        }}>
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" />} />
             <Route path="/dashboard" element={<Dashboard />} />
