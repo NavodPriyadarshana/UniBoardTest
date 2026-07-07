@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../services/auth_service.dart';
 import 'add_listing_screen.dart';
 import 'edit_listing_screen.dart';
@@ -338,6 +339,10 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
         listing['availableSlots'] as int? ?? 0;
     final int occupied = totalSlots - availableSlots;
     final bool isVerified = listing['isVerified'] as bool? ?? false;
+    final List<dynamic> photos =
+        listing['photos'] as List<dynamic>? ?? [];
+    final String? firstPhoto =
+        photos.isNotEmpty ? photos[0] as String : null;
 
     final Color cardColor = roomType == 'Single'
         ? const Color(0xFFF09418)
@@ -381,11 +386,26 @@ class _MyListingsScreenState extends State<MyListingsScreen> {
               ),
               child: Stack(
                 children: [
-                  Center(
-                    child: Icon(Icons.home_rounded,
-                        size: 40,
-                        color: Colors.white.withOpacity(0.2)),
-                  ),
+                  // ── Show first photo or placeholder ──
+                  if (firstPhoto != null)
+                    Positioned.fill(
+                      child: Image.network(
+                        firstPhoto,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stack) =>
+                            Center(
+                          child: Icon(Icons.home_rounded,
+                              size: 40,
+                              color: Colors.white.withOpacity(0.2)),
+                        ),
+                      ),
+                    )
+                  else
+                    Center(
+                      child: Icon(Icons.home_rounded,
+                          size: 40,
+                          color: Colors.white.withOpacity(0.2)),
+                    ),
                   Positioned(
                     top: 8, left: 8,
                     child: Container(
