@@ -8,10 +8,12 @@ import '../landlord/landlord_home_screen.dart';
 class AuthScreen extends StatefulWidget {
   final String role;
   final int initialTabIndex;
+  final String prefillEmail;
   const AuthScreen({
     super.key,
     required this.role,
     this.initialTabIndex = 0,
+    this.prefillEmail = '',
   });
 
   @override
@@ -122,6 +124,7 @@ class _AuthScreenState extends State<AuthScreen>
                                   _SignUpForm(
                                     role: widget.role,
                                     roleColor: _roleColor,
+                                    prefillEmail: widget.prefillEmail,
                                   ),
                                 ],
                         ),
@@ -431,7 +434,12 @@ class _SignInFormState extends State<_SignInForm> {
 class _SignUpForm extends StatefulWidget {
   final String role;
   final Color roleColor;
-  const _SignUpForm({required this.role, required this.roleColor});
+  final String prefillEmail;
+  const _SignUpForm({
+    required this.role,
+    required this.roleColor,
+    this.prefillEmail = '',
+  });
 
   @override
   State<_SignUpForm> createState() => _SignUpFormState();
@@ -439,7 +447,14 @@ class _SignUpForm extends StatefulWidget {
 
 class _SignUpFormState extends State<_SignUpForm> {
   final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
+  late final TextEditingController _emailController;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController(
+        text: widget.prefillEmail);
+  }
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -644,20 +659,64 @@ class _SignUpFormState extends State<_SignUpForm> {
             const SizedBox(height: 16),
             _buildLabel('Email Address'),
             const SizedBox(height: 8),
-            _buildTextField(
-              controller: _emailController,
-              hint: 'Enter your email',
-              icon: Icons.email_outlined,
-              roleColor: widget.roleColor,
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || value.isEmpty)
-                  return 'Please enter your email';
-                if (!value.contains('@'))
-                  return 'Please enter a valid email';
-                return null;
-              },
-            ),
+            if (widget.role == 'landlord' &&
+                widget.prefillEmail.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color: Colors.grey.shade300),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.email_outlined,
+                            color: Colors.grey.shade400,
+                            size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            widget.prefillEmail,
+                            style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.grey.shade600),
+                          ),
+                        ),
+                        Icon(Icons.lock_outline_rounded,
+                            color: Colors.grey.shade400,
+                            size: 16),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Email locked to pre-registration email',
+                    style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.grey.shade400),
+                  ),
+                ],
+              )
+            else
+              _buildTextField(
+                controller: _emailController,
+                hint: 'Enter your email',
+                icon: Icons.email_outlined,
+                roleColor: widget.roleColor,
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value == null || value.isEmpty)
+                    return 'Please enter your email';
+                  if (!value.contains('@'))
+                    return 'Please enter a valid email';
+                  return null;
+                },
+              ),
             const SizedBox(height: 16),
             _buildLabel('Phone Number'),
             const SizedBox(height: 8),
