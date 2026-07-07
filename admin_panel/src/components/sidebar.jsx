@@ -1,12 +1,19 @@
 import { NavLink } from 'react-router-dom';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
+import {
+  LayoutDashboard,
+  FileText,
+  Users,
+  Home,
+  LogOut,
+} from 'lucide-react';
 
 const navItems = [
-  { path: '/dashboard', icon: '📊', label: 'Dashboard' },
-  { path: '/applications', icon: '📄', label: 'Applications' },
-  { path: '/users', icon: '👥', label: 'Users' },
-  { path: '/listings', icon: '🏠', label: 'Listings' },
+  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/applications', icon: FileText, label: 'Applications' },
+  { path: '/users', icon: Users, label: 'Users' },
+  { path: '/listings', icon: Home, label: 'Listings' },
 ];
 
 export default function Sidebar() {
@@ -41,29 +48,32 @@ export default function Sidebar() {
 
       {/* Nav items */}
       <nav style={{ flex: 1 }}>
-        {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            style={({ isActive }) => ({
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              padding: '10px 14px',
-              borderRadius: 10,
-              marginBottom: 4,
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: isActive ? 600 : 400,
-              color: isActive ? '#F09418' : '#5C6B8A',
-              background: isActive ? '#FFF8EC' : 'transparent',
-              transition: 'all 0.2s',
-            })}
-          >
-            <span style={{ fontSize: 18 }}>{item.icon}</span>
-            {item.label}
-          </NavLink>
-        ))}
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              style={({ isActive }) => ({
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '10px 14px',
+                borderRadius: 10,
+                marginBottom: 4,
+                textDecoration: 'none',
+                fontSize: 14,
+                fontWeight: isActive ? 600 : 400,
+                color: isActive ? '#F09418' : '#5C6B8A',
+                background: isActive ? '#FFF8EC' : 'transparent',
+                transition: 'all 0.2s',
+              })}
+            >
+              <Icon size={18} />
+              {item.label}
+            </NavLink>
+          );
+        })}
       </nav>
 
       {/* Sign out */}
@@ -84,7 +94,8 @@ export default function Sidebar() {
           width: '100%',
         }}
       >
-        🚪 Sign Out
+        <LogOut size={16} />
+        Sign Out
       </button>
     </div>
   );
