@@ -32,8 +32,7 @@ class _LandlordPreRegistrationScreenState
     setState(() => _isLoading = true);
 
     try {
-      // ── Check if email already registered ──
-      // Query Firestore users collection
+      // ── Check Firestore users collection ──
       final existingUser = await FirebaseFirestore.instance
           .collection('users')
           .where('email',
@@ -41,6 +40,25 @@ class _LandlordPreRegistrationScreenState
           .get();
 
       if (existingUser.docs.isNotEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'This email is already registered. Please use a different email.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      // ── Check Firebase Auth ──
+      final methods = await FirebaseAuth.instance
+          .fetchSignInMethodsForEmail(
+              _emailController.text.trim());
+
+      if (methods.isNotEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
