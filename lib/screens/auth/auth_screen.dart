@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../constants/app_colors.dart';
 import '../../services/auth_service.dart';
@@ -258,6 +259,31 @@ class _SignInFormState extends State<_SignInForm> {
             ),
           );
         } else if (user.isLandlord) {
+          // ── Save subscription plan to user doc ──
+          try {
+            final email = _emailController.text.trim();
+            
+            final subSnap = await FirebaseFirestore.instance
+                .collection('subscriptions')
+                .where('landlordEmail', isEqualTo: email)
+                .get();
+
+            if (subSnap.docs.isNotEmpty) {
+              final planName =
+                  subSnap.docs.first.data()['planName'];
+              
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .update({
+                'subscriptionPlan': planName,
+                'subscriptionStatus': 'active',
+              });
+            } else {
+            }
+          } catch (e) {
+          }
+
           // ── Navigate to Landlord Dashboard ──
           Navigator.pushReplacement(
             context,
@@ -567,6 +593,31 @@ class _SignUpFormState extends State<_SignUpForm> {
             ),
           );
         } else if (user.isLandlord) {
+          // ── Save subscription plan to user doc ──
+          try {
+            final email = _emailController.text.trim();
+            
+            final subSnap = await FirebaseFirestore.instance
+                .collection('subscriptions')
+                .where('landlordEmail', isEqualTo: email)
+                .get();
+
+            if (subSnap.docs.isNotEmpty) {
+              final planName =
+                  subSnap.docs.first.data()['planName'];
+              
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(user.uid)
+                  .update({
+                'subscriptionPlan': planName,
+                'subscriptionStatus': 'active',
+              });
+            } else {
+            }
+          } catch (e) {
+          }
+
           // ── Navigate to Landlord Dashboard ──
           Navigator.pushReplacement(
             context,
