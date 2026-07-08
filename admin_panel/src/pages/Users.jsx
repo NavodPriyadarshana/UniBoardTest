@@ -96,7 +96,7 @@ export default function Users() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#F8F9FA' }}>
-                {['Name', 'Email', 'Phone', 'Role', 'University'].map(h => (
+                {['Name', 'Email', 'Phone', 'Role', 'University', 'Plan'].map(h => (
                   <th key={h} style={{
                     padding: '12px 16px',
                     textAlign: 'left',
@@ -113,7 +113,7 @@ export default function Users() {
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{
+                  <td colSpan={6} style={{
                     padding: 40,
                     textAlign: 'center',
                     color: '#5C6B8A',
@@ -169,6 +169,26 @@ export default function Users() {
                     </td>
                     <td style={{ padding: '12px 16px', fontSize: 13, color: '#5C6B8A' }}>
                       {user.university || 'N/A'}
+                    </td>
+                    <td style={{ padding: '12px 16px' }}>
+                      {user.role === 'landlord' ? (
+                        <span style={{
+                          padding: '3px 10px',
+                          borderRadius: 20,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          background: user.subscriptionPlan === 'Premium'
+                            ? '#FFF8EC' : user.subscriptionPlan === 'Standard'
+                            ? '#EAF3DE' : user.subscriptionPlan === 'Basic'
+                            ? '#E3EDF4' : '#F5F5F5',
+                          color: user.subscriptionPlan === 'Premium'
+                            ? '#F09418' : user.subscriptionPlan === 'Standard'
+                            ? '#3B6D11' : user.subscriptionPlan === 'Basic'
+                            ? '#2B658B' : '#999',
+                        }}>
+                          {user.subscriptionPlan || 'No Plan'}
+                        </span>
+                      ) : '—'}
                     </td>
                   </tr>
                 ))
