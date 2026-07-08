@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:payhere_mobilesdk_flutter/payhere_mobilesdk_flutter.dart';
@@ -68,8 +70,40 @@ class MembershipPlansScreen extends StatelessWidget {
     PayHere.startPayment(
       paymentObject,
       // ── Payment success ──
-      (paymentId) {
+      (paymentId) async {
         debugPrint('Payment Success! ID: $paymentId');
+
+        // ── Save subscription to Firestore ──
+        try {
+          // Save to subscriptions collection
+          await FirebaseFirestore.instance
+              .collection('subscriptions')
+              .add({
+            'landlordEmail': landlordEmail,
+            'landlordName': landlordName,
+            'planName': planName,
+            'amount': amount,
+            'paymentId': paymentId,
+            'status': 'active',
+            'subscribedAt': FieldValue.serverTimestamp(),
+          });
+
+          // Also update user document if logged in
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .update({
+              'subscriptionPlan': planName,
+              'subscriptionStatus': 'active',
+              'paymentId': paymentId,
+            });
+          }
+        } catch (e) {
+          debugPrint('Error saving subscription: $e');
+        }
+
         if (context.mounted) {
           Navigator.pushAndRemoveUntil(
             context,
