@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../screens/student/listing_detail_screen.dart';
 
 
@@ -20,12 +24,78 @@ class ListingCard extends StatefulWidget {
 
 class _ListingCardState extends State<ListingCard> {
   bool _isPressed = false;
+  String _distance = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _calculateDistance();
+  }
+
+  Future<void> _calculateDistance() async {
+    try {
+      // Get listing coordinates
+      double? listingLat;
+      double? listingLng;
+      
+      final latRaw = widget.listing['latitude'];
+      final lngRaw = widget.listing['longitude'];
+      
+      if (latRaw != null && latRaw != 0.0) {
+        listingLat = (latRaw as num).toDouble();
+      }
+      if (lngRaw != null && lngRaw != 0.0) {
+        listingLng = (lngRaw as num).toDouble();
+      }
+      
+      if (listingLat == null || listingLng == null) return;
+
+      // Get student university
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users').doc(uid).get();
+
+      final university = userDoc.data()?['university'] as String?
+          ?? widget.listing['university'] as String?;
+      if (university == null || university.isEmpty) return;
+
+      // Geocode university
+      final locations = await locationFromAddress(
+          university + ', Sri Lanka');
+      if (locations.isEmpty) return;
+
+      // Calculate distance
+      final distanceInMeters = Geolocator.distanceBetween(
+        locations.first.latitude,
+        locations.first.longitude,
+        listingLat,
+        listingLng,
+      );
+
+      final km = distanceInMeters / 1000;
+      if (mounted) {
+        setState(() {
+          if (km < 1) {
+            _distance = distanceInMeters.toStringAsFixed(0) + 'm from uni';
+          } else {
+            _distance = km.toStringAsFixed(1) + 'km from uni';
+          }
+        });
+      }
+    } catch (e) {
+      // Silent fail
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final listing = widget.listing;
     final Color cardColor = listing['color'] as Color;
-    final int slotsLeft = listing['slotsLeft'] as int;
+    final int slotsLeft =
+        (listing['slotsLeft'] as num? ??
+         listing['availableSlots'] as num? ?? 0).toInt();
 
     return GestureDetector(
       onTap: () {
@@ -73,8 +143,15 @@ class _ListingCardState extends State<ListingCard> {
         widget.listing['photos'] as List<dynamic>? ?? [];
     final String? firstPhoto =
         photos.isNotEmpty ? photos[0] as String : null;
-    final bool isFullyBooked =
-        (widget.listing['availableSlots'] as num? ?? 1).toInt() <= 0;
+    final int availSlots =
+        (widget.listing['slotsLeft'] as num? ??
+         widget.listing['availableSlots'] as num? ?? 1).toInt();
+    final int totalCap =
+        (widget.listing['totalCapacity'] as num? ?? 0).toInt();
+    final int currentOcc =
+        (widget.listing['currentOccupants'] as num? ?? 0).toInt();
+    final bool isFullyBooked = availSlots <= 0 ||
+        (totalCap > 0 && currentOcc >= totalCap);
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
@@ -206,11 +283,12 @@ class _ListingCardState extends State<ListingCard> {
                   fontSize: 12, color: const Color(0xFF5C6B8A)),
               ),
               const SizedBox(width: 4),
-              Text(
-                '• ${listing['distance']}',
-                style: GoogleFonts.poppins(
-                  fontSize: 12, color: Colors.grey.shade400),
-              ),
+              if (_distance.isNotEmpty)
+                Text(
+                  '• ' + _distance,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12, color: const Color(0xFF2B658B)),
+                ),
             ],
           ),
 

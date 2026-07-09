@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../widgets/student/listing_image_area.dart';
 import '../../widgets/student/listing_info_section.dart';
 import '../../widgets/student/listing_amenities.dart';
@@ -30,6 +34,46 @@ class ListingDetailScreen extends StatefulWidget {
 class _ListingDetailScreenState
     extends State<ListingDetailScreen> {
   GoogleMapController? _mapController;
+  String _distance = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _calculateDistance();
+  }
+
+  Future<void> _calculateDistance() async {
+    try {
+      final latRaw = widget.listing['latitude'];
+      final lngRaw = widget.listing['longitude'];
+      if (latRaw == null || lngRaw == null) return;
+      final double listingLat = (latRaw as num).toDouble();
+      final double listingLng = (lngRaw as num).toDouble();
+      if (listingLat == 0.0 || listingLng == 0.0) return;
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users').doc(uid).get();
+      final university = userDoc.data()?['university'] as String?
+          ?? widget.listing['university'] as String?;
+      if (university == null || university.isEmpty) return;
+      final locations = await locationFromAddress(
+          university + ', Sri Lanka');
+      if (locations.isEmpty) return;
+      final distanceInMeters = Geolocator.distanceBetween(
+        locations.first.latitude, locations.first.longitude,
+        listingLat, listingLng,
+      );
+      final km = distanceInMeters / 1000;
+      if (mounted) {
+        setState(() {
+          _distance = km < 1
+              ? distanceInMeters.toStringAsFixed(0) + 'm from university'
+              : km.toStringAsFixed(1) + 'km from university';
+        });
+      }
+    } catch (e) {}
+  }
 
   @override
   void dispose() {
@@ -39,15 +83,13 @@ class _ListingDetailScreenState
 
   // ── Book Button with Fully Booked check ──
   Widget _buildBookButton() {
-    final availableSlots = widget.listing['availableSlots'];
-    final totalCapacity = widget.listing['totalCapacity'];
-    final currentOccupants = widget.listing['currentOccupants'];
-
-
-
-    final int slots = (availableSlots as num? ?? 0).toInt();
-    final int total = (totalCapacity as num? ?? 0).toInt();
-    final int occupants = (currentOccupants as num? ?? 0).toInt();
+    final int slots =
+        (widget.listing['slotsLeft'] as num? ??
+         widget.listing['availableSlots'] as num? ?? 1).toInt();
+    final int total =
+        (widget.listing['totalCapacity'] as num? ?? 0).toInt();
+    final int occupants =
+        (widget.listing['currentOccupants'] as num? ?? 0).toInt();
 
     final bool isFullyBooked =
         slots <= 0 || (total > 0 && occupants >= total);
@@ -232,6 +274,17 @@ class _ListingDetailScreenState
                 color: const Color(0xFF5C6B8A),
               ),
             ),
+            if (_distance.isNotEmpty) ...[
+              const SizedBox(width: 6),
+              Text(
+                '• ' + _distance,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: const Color(0xFF2B658B),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ],
         ),
       ],
