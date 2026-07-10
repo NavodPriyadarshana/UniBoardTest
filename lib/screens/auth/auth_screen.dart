@@ -269,9 +269,19 @@ class _SignInFormState extends State<_SignInForm> {
                 .get();
 
             if (subSnap.docs.isNotEmpty) {
-              final planName =
-                  subSnap.docs.first.data()['planName'];
-              
+              // ── Get most recent subscription ──
+              final docs = subSnap.docs;
+              docs.sort((a, b) {
+                final aTime = a.data()['subscribedAt'];
+                final bTime = b.data()['subscribedAt'];
+                if (aTime == null) return 1;
+                if (bTime == null) return -1;
+                return (bTime as Timestamp)
+                    .compareTo(aTime as Timestamp);
+              });
+              final planName = docs.first.data()['planName'];
+              debugPrint('✅ Latest plan: \$planName');
+
               await FirebaseFirestore.instance
                   .collection('users')
                   .doc(user.uid)
@@ -279,7 +289,6 @@ class _SignInFormState extends State<_SignInForm> {
                 'subscriptionPlan': planName,
                 'subscriptionStatus': 'active',
               });
-            } else {
             }
           } catch (e) {
           }
@@ -603,9 +612,19 @@ class _SignUpFormState extends State<_SignUpForm> {
                 .get();
 
             if (subSnap.docs.isNotEmpty) {
-              final planName =
-                  subSnap.docs.first.data()['planName'];
-              
+              // ── Get most recent subscription ──
+              final docs = subSnap.docs;
+              docs.sort((a, b) {
+                final aTime = a.data()['subscribedAt'];
+                final bTime = b.data()['subscribedAt'];
+                if (aTime == null) return 1;
+                if (bTime == null) return -1;
+                return (bTime as Timestamp)
+                    .compareTo(aTime as Timestamp);
+              });
+              final planName = docs.first.data()['planName'];
+              debugPrint('✅ Latest plan: \$planName');
+
               await FirebaseFirestore.instance
                   .collection('users')
                   .doc(user.uid)
@@ -613,7 +632,6 @@ class _SignUpFormState extends State<_SignUpForm> {
                 'subscriptionPlan': planName,
                 'subscriptionStatus': 'active',
               });
-            } else {
             }
           } catch (e) {
           }
