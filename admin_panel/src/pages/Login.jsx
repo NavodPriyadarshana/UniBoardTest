@@ -38,8 +38,8 @@ export default function Login() {
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <h1 style={{ fontSize: 28, fontWeight: 700 }}>
-            <span style={{ color: '#2B658B' }}>Uni</span>
-            <span style={{ color: '#F09418' }}>Board</span>
+            <span style={{ color: '#2B658B', fontFamily: "'Agency FB', sans-serif" }}>Uni</span>
+            <span style={{ color: '#F09418', fontFamily: "'Agency FB', sans-serif" }}>Board</span>
           </h1>
           <p style={{ color: '#5C6B8A', fontSize: 14, marginTop: 4 }}>
             Admin Portal
