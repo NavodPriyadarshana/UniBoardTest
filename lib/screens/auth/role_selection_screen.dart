@@ -87,7 +87,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                   Text(
                     'Welcome to',
                     style: GoogleFonts.poppins(
-                      fontSize: 32,
+                      fontSize: 28,
                       fontWeight: FontWeight.w800,
                       color: const Color(0xFF1A1A2E),
                       height: 1.2,
@@ -99,18 +99,20 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                       children: [
                         TextSpan(
                           text: 'Uni',
-                          style: GoogleFonts.poppins(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w800,
+                          style: TextStyle(
+                            fontFamily: 'AgencyFB',
+                            fontSize: 38,
+                            fontWeight: FontWeight.w900,
                             color: const Color(0xFF2B658B),
                             height: 1.2,
                           ),
                         ),
                         TextSpan(
                           text: 'Board',
-                          style: GoogleFonts.poppins(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w800,
+                          style: TextStyle(
+                            fontFamily: 'AgencyFB',
+                            fontSize: 38,
+                            fontWeight: FontWeight.w900,
                             color: const Color(0xFFF09418),
                             height: 1.2,
                           ),
@@ -118,7 +120,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                         TextSpan(
                           text: ' 👋',
                           style: GoogleFonts.poppins(
-                            fontSize: 32,
+                            fontSize: 38,
                             fontWeight: FontWeight.w800,
                             height: 1.2,
                           ),
@@ -127,7 +129,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                     ),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
 
                   Text(
                     "Sri Lanka's #1 student boarding\nfinder platform",
@@ -270,7 +272,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
             const SizedBox(height: 20),
 
             Text(
-              'Welcome Landlord! 🏠',
+              'Welcome Landlord! ',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
