@@ -15,17 +15,18 @@ class ListingService {
   // ─────────────────────────────────────────────
   Future<List<ListingModel>> getAllListings() async {
     try {
-      print('🔍 Fetching all listings...');
+      print('🔍 Fetching verified listings...');
       final QuerySnapshot snapshot = await _firestore
           .collection(_collection)
+          .where('isVerified', isEqualTo: true)
           .get();
 
-      print('✅ Found ${snapshot.docs.length} listings');
+      print('✅ Found \${snapshot.docs.length} listings');
       return snapshot.docs
           .map((doc) => ListingModel.fromFirestore(doc))
           .toList();
     } catch (e) {
-      print('❌ Error fetching listings: $e');
+      print('❌ Error fetching listings: \$e');
       return [];
     }
   }
