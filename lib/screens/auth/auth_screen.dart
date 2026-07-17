@@ -262,25 +262,39 @@ class _SignInFormState extends State<_SignInForm> {
           // ── Save subscription plan to user doc ──
           try {
             final email = _emailController.text.trim();
-            
-            final subSnap = await FirebaseFirestore.instance
-                .collection('subscriptions')
-                .where('landlordEmail', isEqualTo: email)
-                .get();
 
-            if (subSnap.docs.isNotEmpty) {
+            // ── Retry up to 3 times with delay ──
+            // Handles race condition between PayHere
+            // callback Firestore write and this query
+            QuerySnapshot? subSnap;
+            for (int attempt = 0; attempt < 3; attempt++) {
+              if (attempt > 0) {
+                await Future.delayed(
+                    const Duration(seconds: 2));
+              }
+              subSnap = await FirebaseFirestore.instance
+                  .collection('subscriptions')
+                  .where('landlordEmail', isEqualTo: email)
+                  .get();
+              if (subSnap.docs.isNotEmpty) break;
+            }
+
+            if (subSnap != null &&
+                subSnap.docs.isNotEmpty) {
               // ── Get most recent subscription ──
               final docs = subSnap.docs;
               docs.sort((a, b) {
-                final aTime = a.data()['subscribedAt'];
-                final bTime = b.data()['subscribedAt'];
+                final aData = a.data() as Map<String, dynamic>;
+                final bData = b.data() as Map<String, dynamic>;
+                final aTime = aData['subscribedAt'];
+                final bTime = bData['subscribedAt'];
                 if (aTime == null) return 1;
                 if (bTime == null) return -1;
                 return (bTime as Timestamp)
                     .compareTo(aTime as Timestamp);
               });
-              final planName = docs.first.data()['planName'];
-              debugPrint('✅ Latest plan: \$planName');
+              final planName = (docs.first.data()
+                  as Map<String, dynamic>)['planName'];
 
               await FirebaseFirestore.instance
                   .collection('users')
@@ -291,6 +305,7 @@ class _SignInFormState extends State<_SignInForm> {
               });
             }
           } catch (e) {
+            debugPrint('Subscription lookup error: \$e');
           }
 
           // ── Navigate to Landlord Dashboard ──
@@ -605,25 +620,39 @@ class _SignUpFormState extends State<_SignUpForm> {
           // ── Save subscription plan to user doc ──
           try {
             final email = _emailController.text.trim();
-            
-            final subSnap = await FirebaseFirestore.instance
-                .collection('subscriptions')
-                .where('landlordEmail', isEqualTo: email)
-                .get();
 
-            if (subSnap.docs.isNotEmpty) {
+            // ── Retry up to 3 times with delay ──
+            // Handles race condition between PayHere
+            // callback Firestore write and this query
+            QuerySnapshot? subSnap;
+            for (int attempt = 0; attempt < 3; attempt++) {
+              if (attempt > 0) {
+                await Future.delayed(
+                    const Duration(seconds: 2));
+              }
+              subSnap = await FirebaseFirestore.instance
+                  .collection('subscriptions')
+                  .where('landlordEmail', isEqualTo: email)
+                  .get();
+              if (subSnap.docs.isNotEmpty) break;
+            }
+
+            if (subSnap != null &&
+                subSnap.docs.isNotEmpty) {
               // ── Get most recent subscription ──
               final docs = subSnap.docs;
               docs.sort((a, b) {
-                final aTime = a.data()['subscribedAt'];
-                final bTime = b.data()['subscribedAt'];
+                final aData = a.data() as Map<String, dynamic>;
+                final bData = b.data() as Map<String, dynamic>;
+                final aTime = aData['subscribedAt'];
+                final bTime = bData['subscribedAt'];
                 if (aTime == null) return 1;
                 if (bTime == null) return -1;
                 return (bTime as Timestamp)
                     .compareTo(aTime as Timestamp);
               });
-              final planName = docs.first.data()['planName'];
-              debugPrint('✅ Latest plan: \$planName');
+              final planName = (docs.first.data()
+                  as Map<String, dynamic>)['planName'];
 
               await FirebaseFirestore.instance
                   .collection('users')
@@ -634,6 +663,7 @@ class _SignUpFormState extends State<_SignUpForm> {
               });
             }
           } catch (e) {
+            debugPrint('Subscription lookup error: \$e');
           }
 
           // ── Navigate to Landlord Dashboard ──
